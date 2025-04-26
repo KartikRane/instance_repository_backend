@@ -1,54 +1,50 @@
-from pydantic import (
-    BaseModel,
-    Field,
-    PositiveInt,
-    conlist,
-)
-from typing import List, Optional
+from pydantic import BaseModel, Field, PositiveInt, conlist
+from typing import Optional
+
 
 class JobShopInstance(BaseModel):
+    """
+    Pydantic model representing a Job Shop Scheduling problem instance.
+    """
 
     # Metadata
     instance_uid: str = Field(..., description="The unique identifier of the instance")
     origin: str = Field(default="", description="The origin or source of the instance")
 
-    # Instance Statistics
+    # Instance data
     number_of_jobs: PositiveInt = Field(
-        ..., description="The number of jobs available in the instance"
+        ..., description="The number of jobs in the instance."
     )
     number_of_machines: PositiveInt = Field(
-        ..., description="The number of machines available in the instance"
+        ..., description="The number of machines in the instance."
     )
-    time_seed: PositiveInt = Field(
-        ..., description="Seed used for generating processing times"
+    times: list[conlist(int, min_items=1)] = Field(
+        ..., description="Matrix of processing times; each row corresponds to a job and each column to an operation."
     )
-    machine_seed: PositiveInt = Field(
-        ..., description="Seed used for assigning machines to operations"
+    machines: list[conlist(int, min_items=1)] = Field(
+        ..., description="Matrix of machine assignments; each row corresponds to a job and each column to the machine index for the corresponding operation."
     )
-    upper_bound: PositiveInt = Field(
-        ..., description="Upper bound on the makespan or objective value"
-    )
-    lower_bound: PositiveInt = Field(
-        ..., description="Lower bound on the makespan or objective value"
-    )
-    '''
-    Times and machine are matrix 
-    In times : row corresponds to a job and each column to the processing time for a operation
-    In Machines : row corresponds to a job and each column to the machine index on that operation 
-    '''
-    times: List[conlist(int, min_items=1)]
-    machines: List[conlist(int, min_items=1)]
 
-    # can add a validator here to validate that times and machines have the same shape, but cant confirm for now
 
 class JobShopSolution(BaseModel):
-    '''Pydantic model representing a solution to a Job Shop problem instance'''
-    '''TODO : What exaclty should come inside the solution part?'''
+    """
+    Pydantic model representing a solution to a Job Shop Scheduling problem instance.
+    """
+
     instance_uid: str = Field(
-        ..., description="The unique identifier of the corresponding instance"
+        ..., description="The unique identifier of the corresponding instance."
     )
-    makespan: Optional[int]
-    authors: Optional[str]
+    makespan: Optional[int] = Field(
+        None, description="The total completion time (makespan) of the schedule."
+    )
+    operation_start_times: Optional[list[list[int]]] = Field(
+        None,
+        description="Matrix of start times for operations; operation_start_times[job][operation] = start time."
+    )
+    authors: Optional[str] = Field(
+        None, description="The authors or contributors of the solution."
+    )
+
 
 # Configuration constants for the Job Shop Scheduling Problem
 
@@ -59,7 +55,6 @@ PROBLEM_UID = "job_shop"
 INSTANCE_UID_ATTRIBUTE = "instance_uid"
 
 # Schema definitions
-
 INSTANCE_SCHEMA = JobShopInstance
 SOLUTION_SCHEMA = JobShopSolution
 
@@ -67,17 +62,13 @@ SOLUTION_SCHEMA = JobShopSolution
 RANGE_FILTERS = [
     "number_of_jobs",
     "number_of_machines",
-    "upper_bound",
-    "lower_bound",
-]  # Numeric fields usable for range filters
+]  # Only real numerical fields left
 
-BOOLEAN_FILTERS = []  # No explicit boolean flags unless added one
+BOOLEAN_FILTERS = []  # No boolean fields yet
 
 SORT_FIELDS = [
     "number_of_jobs",
     "number_of_machines",
-    "upper_bound",
-    "lower_bound",
 ]
 
 # Fields for display purposes in instance overviews
@@ -85,15 +76,12 @@ DISPLAY_FIELDS = [
     "instance_uid",
     "number_of_jobs",
     "number_of_machines",
-    "time_seed",
-    "machine_seed",
-    "upper_bound",
-    "lower_bound",
+    "origin",
 ]
 
 # Assets associated with the job shop problem
-ASSETS = {"thumbnail": "png", "image": "png"}  # Can link to Gantt charts or flow diagrams
+ASSETS = {"thumbnail": "png", "image": "png"}  # Can add visualizations later
 
 # Solution-specific configurations
-SOLUTION_SORT_ATTRIBUTES = ["makespan", "authors"]  # Hypothetical field names for now
-SOLUTION_DISPLAY_FIELDS = ["makespan", "authors"]  # Show these in the frontend/table
+SOLUTION_SORT_ATTRIBUTES = ["makespan", "authors"]
+SOLUTION_DISPLAY_FIELDS = ["makespan", "authors"]

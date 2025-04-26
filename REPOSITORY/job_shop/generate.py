@@ -1,65 +1,75 @@
-from config import JobShopInstance
+from job_shop_config import JobShopInstance
+import lzma
+from pathlib import Path
+from uuid import uuid4
 
-if __name__ == "__main__":
 
-    def write_to_json_xz(data: JobShopInstance):
-        # write to `./instances/{instance_uid}.json.xz`
-        import lzma
-        from pathlib import Path
+def write_to_json_xz(data: JobShopInstance):
+    """Write a JobShopInstance to a compressed .json.xz file."""
+    instance_uid = data.instance_uid
+    path = Path(f"./instances/{instance_uid}.json.xz")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with lzma.open(path, "wt") as f:
+        f.write(data.model_dump_json())
 
-        instance_uid = data.instance_uid
-        path = Path(f"./instances/{instance_uid}.json.xz")
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with lzma.open(path, "wt") as f:
-            f.write(data.model_dump_json())
 
-    # generate random instances for testing
-    from random import randint, seed, sample
-    from uuid import uuid4
+def parse_tai15_15(file_path: str):
+    """Parse the tai15_15.txt file and convert instances to JobShopInstance objects."""
+    with open(file_path, "r") as file:
+        lines = file.readlines()
 
-    NUM_INSTANCES = 100
-    for _ in range(NUM_INSTANCES):
+    i = 0
+    while i < len(lines):
+        # Skip empty lines
+        if lines[i].strip() == "":
+            i += 1
+            continue
 
-        number_of_jobs = randint(3, 20)
-        number_of_machines = randint(2, 10)
-        '''
-        Randomly picks the number of jobs (between 3 and 20).
-        Randomly picks the number of machines (between 2 and 10).
-        Can be changed later!
-        '''
-        time_seed = randint(0, 1_000_000)
-        machine_seed = randint(0, 1_000_000)
-        instance_uid = f"js_{number_of_jobs}x{number_of_machines}_{uuid4().hex[:8]}"
-        
-        # Generate times matrix
-        seed(time_seed)
-        times = [
-            [randint(1, 20) for _ in range(number_of_machines)]
-            for _ in range(number_of_jobs)
-        ]
+        # Read metadata (but ignore them later)
+        metadata_line = lines[i]
+        i += 1
 
-        # Generate machines matrix (each job gets a random permutation of all machines)
-        seed(machine_seed)
-        machines = [
-            sample(range(number_of_machines), number_of_machines)
-            for _ in range(number_of_jobs)
-        ]
+        if i >= len(lines):
+            break
 
-        # Very basic heuristics for bounds
-        upper_bound = sum(max(row) for row in times) #Sum of the longest task in each job
-        lower_bound = sum(min(row) for row in times) #Sum of the shortest task in each job
+        # Parse Times matrix
+        times = []
+        while i < len(lines) and lines[i].strip() != "" and not lines[i].startswith("Machines"):
+            time_row = [int(x) for x in lines[i].strip().split()]
+            times.append(time_row)
+            i += 1
+
+        # Skip the "Machines" label
+        if i < len(lines) and lines[i].strip() == "Machines":
+            i += 1
+
+        # Parse Machines matrix
+        machines = []
+        while i < len(lines) and lines[i].strip() != "" and not lines[i].startswith("Nb of jobs"):
+            machine_row = [int(x) for x in lines[i].strip().split()]
+            machines.append(machine_row)
+            i += 1
+
+        # Create instance
+        number_of_jobs = len(times)
+        number_of_machines = len(times[0]) if times else 0
 
         instance = JobShopInstance(
-            instance_uid=instance_uid,
-            origin="synthetic",
+            instance_uid=str(uuid4()),
+            origin="tai15_15",
             number_of_jobs=number_of_jobs,
             number_of_machines=number_of_machines,
-            time_seed=time_seed,
-            machine_seed=machine_seed,
-            upper_bound=upper_bound,
-            lower_bound=lower_bound,
             times=times,
             machines=machines,
         )
 
+        # Save instance
         write_to_json_xz(instance)
+
+        # After machines block, skip to next block (if any)
+        while i < len(lines) and lines[i].strip() == "":
+            i += 1
+
+
+if __name__ == "__main__":
+    parse_tai15_15("./tai15_15.txt")
