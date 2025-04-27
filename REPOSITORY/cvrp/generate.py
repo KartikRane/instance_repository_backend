@@ -15,7 +15,7 @@ def write_to_json_xz(data: CvrpInstance):
     path = Path(f"./instances/{instance_uid}.json.xz")
     path.parent.mkdir(parents=True, exist_ok=True)
     with lzma.open(path, "wt") as f:
-        f.write(data.model_dump_json())
+        f.write(data.json())
 
 
 def parse_cvrp(file_path: str):
