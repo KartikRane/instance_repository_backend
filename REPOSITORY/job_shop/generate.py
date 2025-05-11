@@ -10,12 +10,12 @@ def write_to_json_xz(data: JobShopInstance):
     path = Path(f"./instances/{instance_uid}.json.xz")
     path.parent.mkdir(parents=True, exist_ok=True)
     with lzma.open(path, "wt") as f:
-        f.write(data.json())
+        f.write(data.json()) 
 
 
-def parse_tai15_15(file_path: str):
-    """Parse the tai15_15.txt file and convert instances to JobShopInstance objects."""
-    with open(file_path, "r") as file:
+def parse_job_shop_file(file_path: Path):
+    """Parse a Job Shop .txt file and convert instances to JobShopInstance objects."""
+    with file_path.open("r") as file:
         lines = file.readlines()
 
     i = 0
@@ -73,7 +73,7 @@ def parse_tai15_15(file_path: str):
 
             instance = JobShopInstance(
                 instance_uid=str(uuid4()),
-                origin="tai15_15",
+                origin=file_path.name,
                 number_of_jobs=number_of_jobs,
                 number_of_machines=number_of_machines,
                 times=times,
@@ -88,4 +88,13 @@ def parse_tai15_15(file_path: str):
 
 
 if __name__ == "__main__":
-    parse_tai15_15("./tai15_15.txt")
+    folder = Path("./benchmark_instances")
+
+    for file_path in folder.glob("*.txt"):
+        try:
+            print(f" Processing: {file_path.name}")
+            parse_job_shop_file(file_path)
+        except Exception as e:
+            print(f" Error processing {file_path.name}: {e}")
+
+    print(" All job shop instances processed.")
