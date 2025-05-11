@@ -19,7 +19,7 @@ def write_to_json_xz(data: CvrpInstance):
 
 
 def parse_cvrp(file_path: str):
-    """Parse a CVRP .vrp.txt file and save as CvrpInstance."""
+    """Parse a CVRP .vrp file and save as CvrpInstance."""
     with open(file_path, "r") as file:
         lines = file.readlines()
 
@@ -106,4 +106,12 @@ def parse_cvrp(file_path: str):
 
 
 if __name__ == "__main__":
-    parse_cvrp("./A-n32-k5.vrp.txt")
+    folder = Path("./benchmark_src/Set_A")  # or wherever your .vrp.txt files are stored
+    for file_path in folder.glob("*.vrp"):
+        try:
+            print(f"Processing: {file_path.name}")
+            parse_cvrp(str(file_path))
+        except Exception as e:
+            print(f" ERROR processing {file_path.name}: {e}")
+
+    print("All CVRP instances processed.")
