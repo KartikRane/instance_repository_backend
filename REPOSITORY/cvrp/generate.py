@@ -95,6 +95,11 @@ def parse_cvrp(file_path: str):
         demands=customer_demands,
     )
 
+    print(f"✓ Processed: {file_path.name}")
+    print(f"  → num_customers: {instance.num_customers}")
+    print(f"  → relative_vehicle_capacity: {instance.relative_vehicle_capacity:.4f}")
+    print(f"  → max_mean_customers_per_tour: {instance.max_mean_customers_per_tour:.2f}")
+
     # Save instance
     write_to_json_xz(instance)
 
