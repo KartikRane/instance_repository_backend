@@ -125,4 +125,4 @@ if __name__ == "__main__":
         instance = parse_instance_file(instance_path, config_row)
         write_to_json_xz(instance)
 
-    print("✅ All instances processed.")
+    print(" All instances processed.")

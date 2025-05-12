@@ -90,11 +90,11 @@ if __name__ == "__main__":
     vrp_files = list(folder.glob("*.vrp"))
 
     if not vrp_files:
-        print("⚠️ No .vrp files found in ./benchmark_instances/Set_A")
+        print(" No .vrp files found in ./benchmark_instances/Set_A")
     else:
         for file_path in vrp_files:
             try:
-                print(f"🔄 Processing: {file_path.name}")
+                print(f" Processing: {file_path.name}")
                 instance = parse_vrp_2d(file_path)
                 write_to_json_xz(instance)
             except Exception as e:

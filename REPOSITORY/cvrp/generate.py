@@ -3,12 +3,6 @@ import lzma
 from pathlib import Path
 from uuid import uuid4
 
-'''
-Right now this parses only one instance (A-n32-k5.vrp.txt).
-Later, if you have multiple .vrp files, we can slightly extend the script 
-to batch process a whole folder. 
-'''
-
 def write_to_json_xz(data: CvrpInstance):
     """Write a CvrpInstance to a compressed .json.xz file."""
     instance_uid = data.instance_uid
@@ -106,7 +100,7 @@ def parse_cvrp(file_path: str):
 
 
 if __name__ == "__main__":
-    folder = Path("./benchmark_src/Set_A")  # or wherever your .vrp.txt files are stored
+    folder = Path("./benchmark_src/Set_A") 
     for file_path in folder.glob("*.vrp"):
         try:
             print(f"Processing: {file_path.name}")
