@@ -1,30 +1,59 @@
-from pydantic import BaseModel, Field, PositiveInt, conlist
+from pydantic import BaseModel, Field, PositiveInt
 from typing import Optional
+from pathlib import Path
 
+#---------------------------------------TO SPECIFY BENCHMARK LINKS-------------------------------------------------
+
+# Mapping of job shop instance filenames to their respective URLs
+JOBSHOP_BENCHMARK_URLS = {
+    "tai15_15.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai15_15.txt",
+    "tai20_15.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai20_15.txt",
+    "tai20_20.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai20_20.txt",
+    "tai30_15.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai30_15.txt",
+    "tai30_20.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai30_20.txt",
+    "tai50_15.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai50_15.txt",
+    "tai50_20.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai50_20.txt",
+    "tai100_20.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai100_20.txt",
+}
+
+# Target directory where benchmark files will be downloaded
+JOBSHOP_DOWNLOAD_DIR = Path("benchmark_instances")
+
+#-------------------------------------------------------------------------------------------------------------------
+
+
+class Machine(BaseModel):
+    """
+    Represents a machine in the shop.
+    """
+    machine_id: int = Field(..., description="Unique machine identifier (starting from 1).")
+    name: str = Field(..., description="Optional human‐readable name for the machine.")
+
+class Operation(BaseModel):
+    """
+    A single operation of a job, to be processed on one machine.
+    The sequence in which operations appear in the Job.operations list
+    defines their technological order.
+    """
+    machine_id: int = Field(..., description="ID of the machine required for this operation.")
+    processing_time: PositiveInt = Field(..., description="Time units needed to complete this operation.")
+
+class Job(BaseModel):
+    """
+    A job is an ordered list of operations.
+    """
+    job_id: int = Field(..., description="Unique job identifier (starting from 1).")
+    operations: list[Operation] = Field(..., description="Operations in the order they must be processed.")
+    release_time: PositiveInt = Field(0, description="Earliest start time for this job.")
 
 class JobShopInstance(BaseModel):
     """
-    Pydantic model representing a Job Shop Scheduling problem instance.
+    Full Job-Shop Problem instance.
     """
-
-    # Metadata
-    instance_uid: str = Field(..., description="The unique identifier of the instance")
-    origin: str = Field(default="", description="The origin or source of the instance")
-
-    # Instance data
-    number_of_jobs: PositiveInt = Field(
-        ..., description="The number of jobs in the instance."
-    )
-    number_of_machines: PositiveInt = Field(
-        ..., description="The number of machines in the instance."
-    )
-    times: list[conlist(int, min_items=1)] = Field(
-        ..., description="Matrix of processing times; each row corresponds to a job and each column to an operation."
-    )
-    machines: list[conlist(int, min_items=1)] = Field(
-        ..., description="Matrix of machine assignments; each row corresponds to a job and each column to the machine index for the corresponding operation."
-    )
-
+    instance_uid: str = Field(..., description="Unique identifier for this problem instance.")
+    origin: str = Field("", description="Dataset or benchmark source (e.g. ’tai15_15.txt’).")
+    machines: list[Machine] = Field(..., description="List of machines available in the shop.")
+    jobs: list[Job] = Field(..., description="List of jobs to schedule.")
 
 class JobShopSolution(BaseModel):
     """
@@ -45,7 +74,6 @@ class JobShopSolution(BaseModel):
         None, description="The authors or contributors of the solution."
     )
 
-
 # Configuration constants for the Job Shop Scheduling Problem
 
 # Unique identifier for the problem
@@ -62,7 +90,7 @@ SOLUTION_SCHEMA = JobShopSolution
 RANGE_FILTERS = [
     "number_of_jobs",
     "number_of_machines",
-]  # Only real numerical fields left
+]
 
 BOOLEAN_FILTERS = []  # No boolean fields yet
 
@@ -79,8 +107,7 @@ DISPLAY_FIELDS = [
     "origin",
 ]
 
-# Assets associated with the job shop problem
-ASSETS = {"thumbnail": "png", "image": "png"}  # Can add visualizations later
+ASSETS = {"thumbnail": "png", "image": "png"}  
 
 # Solution-specific configurations
 SOLUTION_SORT_ATTRIBUTES = ["makespan", "authors"]
