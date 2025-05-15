@@ -2,7 +2,10 @@ from pydantic import BaseModel, Field, PositiveInt
 from typing import Optional
 from pathlib import Path
 
-#---------------------------------------TO SPECIFY BENCHMARK LINKS-------------------------------------------------
+# ---------------------------------------TO SPECIFY BENCHMARK LINKS-------------------------------------------------
+
+# The job shop benchmark library does not have a zip folder so the download is done via the links provided below.
+# New links can be added according to the requirement.
 
 # Mapping of job shop instance filenames to their respective URLs
 JOBSHOP_BENCHMARK_URLS = {
@@ -19,15 +22,19 @@ JOBSHOP_BENCHMARK_URLS = {
 # Target directory where benchmark files will be downloaded
 JOBSHOP_DOWNLOAD_DIR = Path("benchmark_instances")
 
-#-------------------------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------
 
 
 class Machine(BaseModel):
     """
     Represents a machine in the shop.
     """
-    machine_id: int = Field(..., description="Unique machine identifier (starting from 1).")
+
+    machine_id: int = Field(
+        ..., description="Unique machine identifier (starting from 1)."
+    )
     name: str = Field(..., description="Optional human‐readable name for the machine.")
+
 
 class Operation(BaseModel):
     """
@@ -35,25 +42,45 @@ class Operation(BaseModel):
     The sequence in which operations appear in the Job.operations list
     defines their technological order.
     """
-    machine_id: int = Field(..., description="ID of the machine required for this operation.")
-    processing_time: PositiveInt = Field(..., description="Time units needed to complete this operation.")
+
+    machine_id: int = Field(
+        ..., description="ID of the machine required for this operation."
+    )
+    processing_time: PositiveInt = Field(
+        ..., description="Time units needed to complete this operation."
+    )
+
 
 class Job(BaseModel):
     """
     A job is an ordered list of operations.
     """
+
     job_id: int = Field(..., description="Unique job identifier (starting from 1).")
-    operations: list[Operation] = Field(..., description="Operations in the order they must be processed.")
-    release_time: PositiveInt = Field(0, description="Earliest start time for this job.")
+    operations: list[Operation] = Field(
+        ..., description="Operations in the order they must be processed."
+    )
+    release_time: PositiveInt = Field(
+        0, description="Earliest start time for this job."
+    )
+
 
 class JobShopInstance(BaseModel):
     """
     Full Job-Shop Problem instance.
     """
-    instance_uid: str = Field(..., description="Unique identifier for this problem instance.")
-    origin: str = Field("", description="Dataset or benchmark source (e.g. ’tai15_15.txt’).")
-    machines: list[Machine] = Field(..., description="List of machines available in the shop.")
+
+    instance_uid: str = Field(
+        ..., description="Unique identifier for this problem instance."
+    )
+    origin: str = Field(
+        "", description="Dataset or benchmark source (e.g. ’tai15_15.txt’)."
+    )
+    machines: list[Machine] = Field(
+        ..., description="List of machines available in the shop."
+    )
     jobs: list[Job] = Field(..., description="List of jobs to schedule.")
+
 
 class JobShopSolution(BaseModel):
     """
@@ -68,11 +95,12 @@ class JobShopSolution(BaseModel):
     )
     operation_start_times: Optional[list[list[int]]] = Field(
         None,
-        description="Matrix of start times for operations; operation_start_times[job][operation] = start time."
+        description="Matrix of start times for operations; operation_start_times[job][operation] = start time.",
     )
     authors: Optional[str] = Field(
         None, description="The authors or contributors of the solution."
     )
+
 
 # Configuration constants for the Job Shop Scheduling Problem
 
@@ -107,7 +135,7 @@ DISPLAY_FIELDS = [
     "origin",
 ]
 
-ASSETS = {"thumbnail": "png", "image": "png"}  
+ASSETS = {"thumbnail": "png", "image": "png"}
 
 # Solution-specific configurations
 SOLUTION_SORT_ATTRIBUTES = ["makespan", "authors"]

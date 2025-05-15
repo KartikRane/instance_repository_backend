@@ -11,16 +11,21 @@ import csv
 # Function to write instance to JSON.xz
 # --------------------------------------
 
+
 def write_to_json_xz(data: PickupAndDeliveryInstance):
     """Write a PickupAndDeliveryInstance to a compressed JSON (.json.xz) file."""
     path = Path(f"./instances/{data.instance_uid}.json.xz")
     path.parent.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
     with lzma.open(path, "wt") as f:
-        f.write(data.model_dump_json(indent=2))  # Save formatted JSON into compressed file
+        f.write(
+            data.model_dump_json(indent=2)
+        )  # Save formatted JSON into compressed file
+
 
 # --------------------------------------
 # Function to parse a .txt file into an instance
 # --------------------------------------
+
 
 def parse_instance_file(filepath: Path, config_row: dict) -> PickupAndDeliveryInstance:
     """Parse a single PDPTW instance .txt file into PickupAndDeliveryInstance format."""
@@ -97,6 +102,7 @@ def parse_instance_file(filepath: Path, config_row: dict) -> PickupAndDeliveryIn
     )
 
     return instance
+
 
 # --------------------------------------
 # Main execution block

@@ -9,6 +9,7 @@ from config import CVRP_ZIP_URL, CVRP_ZIP_PATH, CVRP_EXTRACT_DIR
 
 # ----------------------------- NEW ADDITIONS FOR EXTRACTING ZIP FILES------------------------------
 
+
 def download_and_extract_cvrp_zip():
     if not CVRP_ZIP_PATH.exists():
         print(f"Downloading CVRP benchmark zip from {CVRP_ZIP_URL}")
@@ -17,12 +18,13 @@ def download_and_extract_cvrp_zip():
 
     if not CVRP_EXTRACT_DIR.exists():
         print(f"Extracting {CVRP_ZIP_PATH} to {CVRP_EXTRACT_DIR}")
-        with ZipFile(CVRP_ZIP_PATH, 'r') as zip_ref:
+        with ZipFile(CVRP_ZIP_PATH, "r") as zip_ref:
             zip_ref.extractall(CVRP_EXTRACT_DIR)
+
 
 download_and_extract_cvrp_zip()
 
-#-----------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------
 
 
 def write_to_json_xz(data: Cvrp2DInstance):
@@ -31,8 +33,9 @@ def write_to_json_xz(data: Cvrp2DInstance):
     with lzma.open(path, "wt") as f:
         f.write(data.json())
 
+
 def parse_cvrp_2d(file_path: str):
-    file_path = Path(file_path) # converting string to path object
+    file_path = Path(file_path)  # converting string to path object
     with open(file_path, "r") as file:
         lines = file.readlines()
 
@@ -106,7 +109,7 @@ def parse_cvrp_2d(file_path: str):
         origin="cvrp_benchmark_2d",
         vehicle_capacity=vehicle_capacity,
         depot=depot,
-        customers=customers
+        customers=customers,
     )
 
     write_to_json_xz(instance)

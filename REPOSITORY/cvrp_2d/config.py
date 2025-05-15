@@ -7,17 +7,22 @@ CVRP_EXTRACT_DIR = Path("data/cvrp2d_benchmarks")
 
 # --- Schema for CVRP_2D ---
 
+
 class Location(BaseModel):
     x: float = Field(..., description="X coordinate")
     y: float = Field(..., description="Y coordinate")
+
 
 class Customer(Location):
     customer_id: int = Field(..., description="Customer ID (1-based)")
     demand: PositiveInt = Field(..., description="Demand")
 
+
 class Depot(Location):
     """Depot class, extendable for additional attributes."""
+
     pass
+
 
 class Cvrp2DInstance(BaseModel):
     instance_uid: str = Field(..., description="Unique instance ID")
@@ -32,19 +37,15 @@ class Cvrp2DInstance(BaseModel):
 PROBLEM_UID = "cvrp_2d"
 INSTANCE_UID_ATTRIBUTE = "instance_uid"
 
-INSTANCE_SCHEMA = Cvrp2DInstance 
+INSTANCE_SCHEMA = Cvrp2DInstance
 
-#   TODO : Not sure for the range and sort filters..what exactly to keep 
+#   TODO : Not sure for the range and sort filters..what exactly to keep
 
 RANGE_FILTERS = ["vehicle_capacity"]
 BOOLEAN_FILTERS = []
 SORT_FIELDS = ["vehicle_capacity"]
 
-DISPLAY_FIELDS = [
-    "instance_uid",
-    "vehicle_capacity",
-    "origin"
-]
+DISPLAY_FIELDS = ["instance_uid", "vehicle_capacity", "origin"]
 
 ASSETS = {"thumbnail": "png", "image": "png"}
 

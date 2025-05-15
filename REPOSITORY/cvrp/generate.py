@@ -3,6 +3,7 @@ import lzma
 from pathlib import Path
 from uuid import uuid4
 
+
 def write_to_json_xz(data: CvrpInstance):
     """Write a CvrpInstance to a compressed .json.xz file."""
     instance_uid = data.instance_uid
@@ -98,14 +99,16 @@ def parse_cvrp(file_path: str):
     print(f"✓ Processed: {file_path.name}")
     print(f"  → num_customers: {instance.num_customers}")
     print(f"  → relative_vehicle_capacity: {instance.relative_vehicle_capacity:.4f}")
-    print(f"  → max_mean_customers_per_tour: {instance.max_mean_customers_per_tour:.2f}")
+    print(
+        f"  → max_mean_customers_per_tour: {instance.max_mean_customers_per_tour:.2f}"
+    )
 
     # Save instance
     write_to_json_xz(instance)
 
 
 if __name__ == "__main__":
-    folder = Path("./benchmark_src/Set_A") 
+    folder = Path("./benchmark_src/Set_A")
     for file_path in folder.glob("*.vrp"):
         try:
             print(f"Processing: {file_path.name}")

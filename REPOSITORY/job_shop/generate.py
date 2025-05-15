@@ -1,8 +1,11 @@
 from config import (
-    JobShopInstance, Job, Operation, Machine,
-    JOBSHOP_BENCHMARK_URLS, JOBSHOP_DOWNLOAD_DIR
+    JobShopInstance,
+    Job,
+    Operation,
+    Machine,
+    JOBSHOP_BENCHMARK_URLS,
+    JOBSHOP_DOWNLOAD_DIR,
 )
-
 import lzma
 from pathlib import Path
 from uuid import uuid4
@@ -38,7 +41,7 @@ def parse_jobshop_instance(file_path: Path) -> JobShopInstance:
     with file_path.open("r") as f:
         lines = [line.strip() for line in f if line.strip()]
 
-    i = 0  # Initialize the index variable    
+    i = 0  # Initialize the index variable
 
     # Skip metadata and the line containing "Times"
     while i < len(lines):
@@ -85,14 +88,16 @@ def parse_jobshop_instance(file_path: Path) -> JobShopInstance:
         for op_index in range(number_of_machines):
             machine_id = machines[job_id - 1][op_index]
             processing_time = times[job_id - 1][op_index]
-            ops.append(Operation(machine_id=machine_id, processing_time=processing_time))
+            ops.append(
+                Operation(machine_id=machine_id, processing_time=processing_time)
+            )
         jobs.append(Job(job_id=job_id, operations=ops))
 
     instance = JobShopInstance(
         instance_uid=f"{file_path.stem}_{uuid4().hex[:8]}",
         origin=file_path.name,
         machines=machine_objs,
-        jobs=jobs
+        jobs=jobs,
     )
 
     return instance
@@ -103,7 +108,9 @@ if __name__ == "__main__":
 
     for file_path in JOBSHOP_DOWNLOAD_DIR.glob("*.txt"):
         try:
-            print(f"------------------------------- Processing: {file_path.name}------------------------")
+            print(
+                f"------------------------------- Processing: {file_path.name}------------------------"
+            )
             instance = parse_jobshop_instance(file_path)
             write_to_json_xz(instance)
         except Exception as e:
