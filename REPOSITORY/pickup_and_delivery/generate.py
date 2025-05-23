@@ -1,134 +1,123 @@
-# Import necessary classes from config
-from config import PickupAndDeliveryInstance, PickupAndDeliveryLocation
-
-# Import libraries for compression, file handling, and unique ID generation
+import os
+import json
 import lzma
+from config import PickupAndDeliveryInstance, Depot, Location, Request
 from pathlib import Path
-from uuid import uuid4
-import csv
 
-# --------------------------------------
-# Function to write instance to JSON.xz
-# --------------------------------------
+def parse_instance_file(file_path: str) -> PickupAndDeliveryInstance:
+    with open(file_path, 'r') as f:
+        lines = [line.strip() for line in f if line.strip()]
 
+    metadata = {}
+    nodes = []
 
-def write_to_json_xz(data: PickupAndDeliveryInstance):
-    """Write a PickupAndDeliveryInstance to a compressed JSON (.json.xz) file."""
-    path = Path(f"./instances/{data.instance_uid}.json.xz")
-    path.parent.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
-    with lzma.open(path, "wt") as f:
-        f.write(
-            data.model_dump_json(indent=2)
-        )  # Save formatted JSON into compressed file
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if line.startswith("NAME:"):
+            metadata["instance_uid"] = line.split(":", 1)[1].strip()
+        elif line.startswith("LOCATION:"):
+            metadata["city"] = line.split(":", 1)[1].strip()
+        elif line.startswith("COMMENT:"):
+            metadata["origin"] = line.split(":", 1)[1].strip()
+        elif line.startswith("TYPE:"):
+            pass
+        elif line.startswith("SIZE:"):
+            metadata["size"] = int(line.split(":", 1)[1].strip())
+        elif line.startswith("DISTRIBUTION:"):
+            metadata["distribution"] = line.split(":", 1)[1].strip()
+        elif line.startswith("DEPOT:"):
+            metadata["depot_type"] = line.split(":", 1)[1].strip()
+        elif line.startswith("ROUTE-TIME:"):
+            metadata["horizon"] = float(line.split(":", 1)[1].strip())
+        elif line.startswith("TIME-WINDOW:"):
+            metadata["time_window"] = float(line.split(":", 1)[1].strip())
+        elif line.startswith("CAPACITY:"):
+            metadata["capacity"] = int(line.split(":", 1)[1].strip())
+        elif line == "NODES":
+            i += 1
+            while i < len(lines) and not lines[i].startswith("EDGES"):
+                tokens = lines[i].split()
+                node_id = int(tokens[0])
+                lat = float(tokens[1])
+                lon = float(tokens[2])
+                demand = int(tokens[3])
+                ready_time = float(tokens[4])
+                due_time = float(tokens[5])
+                service_time = float(tokens[6])
+                nodes.append((node_id, lat, lon, demand, ready_time, due_time, service_time))
+                i += 1
+        i += 1
 
+    depot_data = nodes[0]
+    depot = Depot(
+        x=depot_data[1],
+        y=depot_data[2],
+        ready_time=depot_data[4],
+        due_time=depot_data[5],
+        service_time=depot_data[6]
+    )
 
-# --------------------------------------
-# Function to parse a .txt file into an instance
-# --------------------------------------
+    requests = []
+    # pairing based on order: pickup at odd indices, delivery at even indices
+    for idx in range(1, len(nodes), 2):
+        pickup_data = nodes[idx]
+        delivery_data = nodes[idx + 1]
 
+        pickup_location = Location(
+            x=pickup_data[1],
+            y=pickup_data[2],
+            ready_time=pickup_data[4],
+            due_time=pickup_data[5],
+            service_time=pickup_data[6]
+        )
+        delivery_location = Location(
+            x=delivery_data[1],
+            y=delivery_data[2],
+            ready_time=delivery_data[4],
+            due_time=delivery_data[5],
+            service_time=delivery_data[6]
+        )
 
-def parse_instance_file(filepath: Path, config_row: dict) -> PickupAndDeliveryInstance:
-    """Parse a single PDPTW instance .txt file into PickupAndDeliveryInstance format."""
-    with filepath.open("r") as f:
-        lines = f.readlines()
+        pickup_demand = pickup_data[3]
 
-    locations = []  # List to store all pickup and delivery locations
-    depot = None  # Depot location
-    reading_locations = False  # Flag to know when reading location section starts
+        request = Request(
+            request_id=idx,
+            pickup=pickup_location,
+            delivery=delivery_location,
+            demand=abs(pickup_demand)
+        )
+        requests.append(request)
 
-    for line in lines:
-        line = line.strip()
-
-        # Start reading location information when NODE_COORD_SECTION or PICKUP_SECTION appears
-        if line.startswith("NODE_COORD_SECTION") or line.startswith("PICKUP_SECTION"):
-            reading_locations = True
-            continue
-
-        # Stop reading at EOF marker
-        if line == "EOF":
-            break
-
-        if reading_locations:
-            parts = line.split()
-            if len(parts) < 7:
-                continue  # Skip any incomplete lines
-
-            # Extract location details
-            location_id = int(parts[0])
-            x = float(parts[1])
-            y = float(parts[2])
-            demand = int(parts[3])
-            ready_time = float(parts[4])
-            due_time = float(parts[5])
-            service_time = float(parts[6])
-
-            # Create a PickupAndDeliveryLocation object
-            loc = PickupAndDeliveryLocation(
-                location_id=location_id,
-                x=x,
-                y=y,
-                demand=demand,
-                ready_time=ready_time,
-                due_time=due_time,
-                service_time=service_time,
-            )
-
-            # Identify depot separately (location_id = 0)
-            if location_id == 0:
-                depot = loc
-            else:
-                locations.append(loc)
-
-    # Ensure depot is found
-    if depot is None:
-        raise ValueError(f"Depot not found in {filepath}")
-
-    # Create the full instance object
     instance = PickupAndDeliveryInstance(
-        instance_uid=f"pickup_delivery_{uuid4().hex[:8]}",  # Unique ID
-        origin="PDPTW Mendeley Dataset",  # Hardcoded origin
-        size=int(config_row["Size"]),
-        city=config_row["City"],
-        distribution=config_row["Distribution"],
-        clusters=int(config_row["Clusters"]) if config_row["Clusters"] != "-" else None,
-        density=float(config_row["Density"]) if config_row["Density"] != "-" else None,
-        horizon=float(config_row["Horizon"]),
-        time_window=float(config_row["Time Window"]),
-        service_time=float(config_row["Service Time"]),
-        capacity=int(config_row["Capacity"]),
-        depot_type=config_row["Depot"],
+        instance_uid=metadata["instance_uid"],
+        origin=metadata["origin"],
+        size=metadata["size"],
+        city=metadata["city"],
+        distribution=metadata["distribution"],
+        clusters=None,
+        density=None,
+        horizon=metadata["horizon"],
+        time_window=metadata["time_window"],
+        service_time=depot.service_time,
+        capacity=metadata["capacity"],
+        depot_type=metadata["depot_type"],
         depot=depot,
-        locations=locations,
+        requests=requests
     )
 
     return instance
 
+def save_as_json_xz(instance: PickupAndDeliveryInstance, output_path: Path):
+    with lzma.open(output_path, "wt") as f:
+        json.dump(instance.dict(), f, indent=2)
 
-# --------------------------------------
-# Main execution block
-# --------------------------------------
+def main():
+    input_file = "bar-n1000-5.txt"
+    output_file = Path(f"{input_file.replace('.txt', '.json.xz')}")
+    instance = parse_instance_file(input_file)
+    save_as_json_xz(instance, output_file)
+    print(f"Instance saved to {output_file}")
 
 if __name__ == "__main__":
-    config_path = Path("./configurations.txt")  # Path to the configurations metadata
-    instances_folder = Path("./Instances")  # Folder containing all .txt instance files
-
-    # Read the configurations file
-    with config_path.open("r") as f:
-        reader = csv.DictReader(f, delimiter=";")
-        configs = list(reader)
-
-    # Loop over all configuration rows
-    for config_row in configs:
-        instance_filename = config_row["Name"] + ".txt"
-        instance_path = instances_folder / instance_filename
-
-        # Skip missing files
-        if not instance_path.exists():
-            print(f"Warning: {instance_path} does not exist. Skipping.")
-            continue
-
-        # Parse the file and write to compressed JSON
-        instance = parse_instance_file(instance_path, config_row)
-        write_to_json_xz(instance)
-
-    print(" All instances processed.")
+    main()
