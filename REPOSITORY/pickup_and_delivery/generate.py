@@ -1,8 +1,30 @@
-import os
 import json
 import lzma
-from config import PickupAndDeliveryInstance, Depot, Location, Request
+import urllib.request
+from zipfile import ZipFile
 from pathlib import Path
+
+from config import (
+    PDPTW_ZIP_URL,
+    PDPTW_ZIP_PATH,
+    PDPTW_EXTRACT_DIR,
+    Depot,
+    Location,
+    PickupAndDeliveryInstance,
+    Request,
+)
+
+def download_and_extract_pdptw_zip():
+    if not PDPTW_ZIP_PATH.exists():
+        print(f"Downloading PDPTW zip from {PDPTW_ZIP_URL}")
+        PDPTW_ZIP_PATH.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(PDPTW_ZIP_URL, PDPTW_ZIP_PATH)
+
+    if not PDPTW_EXTRACT_DIR.exists():
+        print(f"Extracting {PDPTW_ZIP_PATH} to {PDPTW_EXTRACT_DIR}")
+        with ZipFile(PDPTW_ZIP_PATH, "r") as zip_ref:
+            zip_ref.extractall(PDPTW_EXTRACT_DIR)
+
 
 def parse_instance_file(file_path: str) -> PickupAndDeliveryInstance:
     with open(file_path, 'r') as f:
@@ -113,11 +135,16 @@ def save_as_json_xz(instance: PickupAndDeliveryInstance, output_path: Path):
         json.dump(instance.dict(), f, indent=2)
 
 def main():
-    input_file = "bar-n1000-5.txt"
-    output_file = Path(f"{input_file.replace('.txt', '.json.xz')}")
-    instance = parse_instance_file(input_file)
-    save_as_json_xz(instance, output_file)
-    print(f"Instance saved to {output_file}")
+    download_and_extract_pdptw_zip()
+
+    for txt_file in PDPTW_EXTRACT_DIR.rglob("*.txt"):
+        try:
+            instance = parse_instance_file(str(txt_file))
+            output_path = txt_file.with_suffix(".json.xz")
+            save_as_json_xz(instance, output_path)
+            print(f"✅ Saved: {output_path}")
+        except Exception as e:
+            print(f"❌ Failed to parse {txt_file.name}: {e}")
 
 if __name__ == "__main__":
     main()

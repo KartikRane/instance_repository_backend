@@ -1,8 +1,14 @@
-"""
-Benchmark src: https://data.mendeley.com/datasets/wr2ct4r22f/2
-"""
+from pathlib import Path
 from pydantic import BaseModel, Field, PositiveInt
 from typing import Optional
+
+# Benchmark src: https://data.mendeley.com/datasets/wr2ct4r22f/2
+# --- Benchmark zip source ---
+# --- There are 300 instance zip files. A zip link can be set accordingly.
+
+PDPTW_ZIP_URL = "https://data.mendeley.com/public-files/datasets/wr2ct4r22f/files/3a7ae280-6b8a-43ab-81d9-639db92169b8/file_downloaded"
+PDPTW_ZIP_PATH = Path("data/pdptw_benchmark.zip")
+PDPTW_EXTRACT_DIR = Path("data/pdptw_benchmark")
 
 class Location(BaseModel):
     x: float = Field(..., description="Latitude coordinate.")
