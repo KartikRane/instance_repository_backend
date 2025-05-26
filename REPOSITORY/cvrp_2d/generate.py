@@ -2,12 +2,10 @@ from config import Cvrp2DInstance, Customer, Depot
 import lzma
 from pathlib import Path
 from uuid import uuid4
-
 import urllib.request
 from zipfile import ZipFile
 from config import CVRP_ZIP_URL, CVRP_ZIP_PATH, CVRP_EXTRACT_DIR
-
-# ----------------------------- NEW ADDITIONS FOR EXTRACTING ZIP FILES------------------------------
+from math import dist
 
 
 def download_and_extract_cvrp_zip():
@@ -24,8 +22,6 @@ def download_and_extract_cvrp_zip():
 
 download_and_extract_cvrp_zip()
 
-# -----------------------------------------------------------------------------------------------------
-
 
 def write_to_json_xz(data: Cvrp2DInstance):
     path = Path(f"./instances/{data.instance_uid}.json.xz")
@@ -34,8 +30,18 @@ def write_to_json_xz(data: Cvrp2DInstance):
         f.write(data.json())
 
 
+def compute_distance_matrix(depot: Depot, customers: list[Customer]) -> list[list[float]]:
+    points = [depot] + customers
+    n = len(points)
+    matrix = [[0.0] * n for _ in range(n)]
+    for i in range(n):
+        for j in range(n):
+            matrix[i][j] = dist((points[i].x, points[i].y), (points[j].x, points[j].y))
+    return matrix
+
+
 def parse_cvrp_2d(file_path: str):
-    file_path = Path(file_path)  # converting string to path object
+    file_path = Path(file_path)
     with open(file_path, "r") as file:
         lines = file.readlines()
 
@@ -104,12 +110,15 @@ def parse_cvrp_2d(file_path: str):
             demand = demands[cid]
             customers.append(Customer(x=x, y=y, customer_id=cid, demand=demand))
 
+    distance_matrix = compute_distance_matrix(depot, customers)
+
     instance = Cvrp2DInstance(
         instance_uid=f"{file_path.stem}_{uuid4().hex[:8]}",
         origin="cvrp_benchmark_2d",
         vehicle_capacity=vehicle_capacity,
         depot=depot,
         customers=customers,
+        distance_matrix=distance_matrix,
     )
 
     write_to_json_xz(instance)
