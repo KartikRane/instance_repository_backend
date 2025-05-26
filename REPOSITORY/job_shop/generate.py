@@ -31,7 +31,7 @@ def write_to_json_xz(instance: JobShopInstance):
     path = Path(f"./instances/{instance.instance_uid}.json.xz")
     path.parent.mkdir(parents=True, exist_ok=True)
     with lzma.open(path, "wt") as f:
-        f.write(instance.json(indent=2))
+        f.write(instance.model_dump_json(indent=2))
 
 
 def parse_jobshop_instance(file_path: Path) -> JobShopInstance:
@@ -98,7 +98,10 @@ def parse_jobshop_instance(file_path: Path) -> JobShopInstance:
         origin=file_path.name,
         machines=machine_objs,
         jobs=jobs,
+        number_of_jobs=number_of_jobs,
+        number_of_machines=number_of_machines,
     )
+
 
     return instance
 

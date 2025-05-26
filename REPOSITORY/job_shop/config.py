@@ -81,6 +81,13 @@ class JobShopInstance(BaseModel):
     )
     jobs: list[Job] = Field(..., description="List of jobs to schedule.")
 
+    number_of_jobs: int = Field(
+        ..., description="Total number of jobs in the instance."
+    )
+    number_of_machines: int = Field(
+        ..., description="Total number of machines in the instance."
+    )
+
 
 class JobShopSolution(BaseModel):
     """

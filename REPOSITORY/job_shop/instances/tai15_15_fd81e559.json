@@ -1,5 +1,5 @@
 {
-  "instance_uid": "tai15_15_d6d4f036",
+  "instance_uid": "tai15_15_fd81e559",
   "origin": "tai15_15.txt",
   "machines": [
     {
@@ -1054,5 +1054,7 @@
       ],
       "release_time": 0
     }
-  ]
+  ],
+  "number_of_jobs": 15,
+  "number_of_machines": 15
 }
