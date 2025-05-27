@@ -1,4 +1,5 @@
 import lzma
+import os
 from pathlib import Path
 from uuid import uuid4
 import urllib.request
@@ -137,16 +138,8 @@ def parse_jobshop_instance(file_path: Path) -> JobShopInstance:
 if __name__ == "__main__":
     # Configuration via environment variables
     base_url = os.environ.get('BASE_URL', 'http://127.0.0.1')
-    problem_uid = os.environ.get('PROBLEM_UID', 'knapsackjob_shop')
+    problem_uid = os.environ.get('PROBLEM_UID', 'job_shop')
     api_key = os.environ.get('API_KEY', "3456345-456-456")
-    zip_url = os.environ.get(
-        'ZIP_URL',
-        'https://github.com/JorikJooken/knapsackProblemInstances/archive/refs/heads/master.zip',
-    )
-    work_dir = Path(os.environ.get('WORK_DIR', Path.cwd()))
-
-    zip_path = work_dir / 'jooken_master.zip'
-    extract_dir = work_dir / 'jooken_master'
 
     #download benchmark files if not present
     download_missing_files()
