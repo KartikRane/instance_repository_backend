@@ -2,39 +2,14 @@ from pydantic import BaseModel, Field, PositiveInt
 from typing import Optional
 from pathlib import Path
 
-# ---------------------------------------TO SPECIFY BENCHMARK LINKS-------------------------------------------------
-
-# The job shop benchmark library does not have a zip folder so the download is done via the links provided below.
-# New links can be added according to the requirement.
-
-# Mapping of job shop instance filenames to their respective URLs
-JOBSHOP_BENCHMARK_URLS = {
-    "tai15_15.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai15_15.txt",
-    "tai20_15.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai20_15.txt",
-    "tai20_20.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai20_20.txt",
-    "tai30_15.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai30_15.txt",
-    "tai30_20.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai30_20.txt",
-    "tai50_15.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai50_15.txt",
-    "tai50_20.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai50_20.txt",
-    "tai100_20.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai100_20.txt",
-}
-
-# Target directory where benchmark files will be downloaded
-JOBSHOP_DOWNLOAD_DIR = Path("benchmark_instances")
-
-# -------------------------------------------------------------------------------------------------------------------
-
-
 class Machine(BaseModel):
     """
     Represents a machine in the shop.
     """
-
     machine_id: int = Field(
         ..., description="Unique machine identifier (starting from 1)."
     )
     name: str = Field(..., description="Optional human‐readable name for the machine.")
-
 
 class Operation(BaseModel):
     """
@@ -42,15 +17,12 @@ class Operation(BaseModel):
     The sequence in which operations appear in the Job.operations list
     defines their technological order.
     """
-
     machine_id: int = Field(
         ..., description="ID of the machine required for this operation."
     )
     processing_time: PositiveInt = Field(
         ..., description="Time units needed to complete this operation."
     )
-
-
 class Job(BaseModel):
     """
     A job is an ordered list of operations.
@@ -63,7 +35,6 @@ class Job(BaseModel):
     release_time: PositiveInt = Field(
         0, description="Earliest start time for this job."
     )
-
 
 class JobShopInstance(BaseModel):
     """
@@ -87,7 +58,6 @@ class JobShopInstance(BaseModel):
     number_of_machines: int = Field(
         ..., description="Total number of machines in the instance."
     )
-
 
 class JobShopSolution(BaseModel):
     """

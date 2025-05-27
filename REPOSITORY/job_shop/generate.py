@@ -11,6 +11,23 @@ from pathlib import Path
 from uuid import uuid4
 import urllib.request
 
+# The job shop benchmark library does not have a zip folder so the download is done via the links provided below.
+# New links can be added according to the requirement.
+
+# Mapping of job shop instance filenames to their respective URLs
+JOBSHOP_BENCHMARK_URLS = {
+    "tai15_15.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai15_15.txt",
+    "tai20_15.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai20_15.txt",
+    "tai20_20.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai20_20.txt",
+    "tai30_15.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai30_15.txt",
+    "tai30_20.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai30_20.txt",
+    "tai50_15.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai50_15.txt",
+    "tai50_20.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai50_20.txt",
+    "tai100_20.txt": "http://mistic.heig-vd.ch/taillard/problemes.dir/ordonnancement.dir/jobshop.dir/tai100_20.txt",
+}
+
+# Target directory where benchmark files will be downloaded
+JOBSHOP_DOWNLOAD_DIR = Path("benchmark_instances")
 
 def download_missing_files():
     """
@@ -94,8 +111,9 @@ def parse_jobshop_instance(file_path: Path) -> JobShopInstance:
         jobs.append(Job(job_id=job_id, operations=ops))
 
     instance = JobShopInstance(
-        instance_uid=f"JobShop_{file_path.stem}", # changed instance UID only for job shop untill final format is confirmed
-        origin=file_path.name,
+        instance_uid=f"OR-Library/{file_path.stem}",
+        origin=("https://people.brunel.ac.uk/~mastjjb/jeb/orlib/jobshopinfo.html"
+                "OR-Library is a collection of test data sets for a variety of OR problems."),
         machines=machine_objs,
         jobs=jobs,
         number_of_jobs=number_of_jobs,
