@@ -15,7 +15,7 @@ def _generate_problem_instance_index_table(
     It is automatically generated based on the information provided in the problem_info parameter.
     """
     annotations = {}
-    class_name = f"{problem_info.problem_uid.replace("-", "_")}_instances"
+    class_name = f"{problem_info.problem_uid.replace('-', '_')}_instances"
     class_dict = {
         "__tablename__": class_name,
     }

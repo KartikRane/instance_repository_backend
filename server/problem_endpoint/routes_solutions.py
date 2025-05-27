@@ -40,7 +40,7 @@ def build_solution_routes(
             raise HTTPException(status_code=404, detail=str(ke))
 
     @router.get(
-        "/solution_info/{instance_uid}",
+        "/solution_info/{instance_uid:path}",
         response_model=solution_index.PaginatedResponse,
     )
     def get_solution_info(

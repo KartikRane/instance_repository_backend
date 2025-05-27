@@ -33,9 +33,9 @@ class SolutionRepository:
         Returns the solution as a Pydantic model.
         """
         check_uid_pattern(solution_uid)
-        assert (
-            self.problem_info.solution_model is not None
-        ), "The problem does not have a solution model"
+        assert self.problem_info.solution_model is not None, (
+            "The problem does not have a solution model"
+        )
         solution = self.file_system.load(self.problem_info.solution_model, solution_uid)
         instance_uid = getattr(solution, self.problem_info.uid_attribute)
         if not solution_uid.startswith(instance_uid + "/"):
@@ -48,9 +48,9 @@ class SolutionRepository:
         """
         Write the solution to the file system.
         """
-        assert (
-            self.problem_info.solution_model is not None
-        ), "The problem does not have a solution model"
+        assert self.problem_info.solution_model is not None, (
+            "The problem does not have a solution model"
+        )
         if not isinstance(solution, self.problem_info.solution_model):
             raise ValueError("The solution is not of the correct type")
         instance_uid = getattr(solution, self.problem_info.uid_attribute)

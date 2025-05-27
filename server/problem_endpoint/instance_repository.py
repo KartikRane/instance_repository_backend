@@ -66,7 +66,11 @@ class LocalFileSystemWithCompression:
         """
         path = (self.root / uid).with_suffix(".json.xz")
         if not path.exists():
-            logging.error("LocalFileSystemWithCompression: No file found for %s under %s", uid, path)
+            logging.error(
+                "LocalFileSystemWithCompression: No file found for %s under %s",
+                uid,
+                path,
+            )
             raise KeyError(f"No file found for {uid}")
         with lzma.open(path, "rt") as file:
             return model.model_validate_json(file.read())
