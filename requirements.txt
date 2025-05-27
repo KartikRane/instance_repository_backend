@@ -1,6 +1,6 @@
 fastapi
 psycopg2
+python-multipart
 pyyaml
 sqlmodel
 uvicorn
-python-multipart

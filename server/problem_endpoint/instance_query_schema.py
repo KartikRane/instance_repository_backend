@@ -14,7 +14,7 @@ def _generate_query_schema(problem_info: ProblemInfo) -> Type[BaseModel]:
     as well as to automatically build the SQL query.
     """
     annotations = {}
-    class_name = f"{problem_info.problem_uid.replace("-", "_")}_query"
+    class_name = f"{problem_info.problem_uid.replace('-', '_')}_query"
     class_dict = {}
     logging.debug(
         "Generating query schema class '%s' for problem_uid=%s",

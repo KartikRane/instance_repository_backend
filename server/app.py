@@ -7,7 +7,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from server.app_config import PROBLEMS
 
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", stream=sys.stdout)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    stream=sys.stdout,
+)
 
 # read from environment variable
 IRB_ROOT = os.getenv("IRB_ROOT", "/")

@@ -259,230 +259,280 @@ After removing the corrupted volume, restart the services to rebuild the index.
 
 > [!WARNING]
 >
-> You may want to deactivate that mechanism if you build a huge repository, as otherwise you could experience long startup times after restarts.
-> We decided to implement this feature as a default to make it super easy to repair, in case something gets broken because you were to lazy
-> to check the code of your student assistant properly (none of us have the time and students make mistakes...).
+> You may want to deactivate that mechanism if you build a huge repository, as
+> otherwise you could experience long startup times after restarts. We decided
+> to implement this feature as a default to make it super easy to repair, in
+> case something gets broken because you were to lazy to check the code of your
+> student assistant properly (none of us have the time and students make
+> mistakes...).
 
 ## Routes
 
 The backend exposes several routes for managing instances and solutions.
 
-- `GET /{PROBLEM_UID}/instances/{INSTANCE_UID}`: Retrieve a specific instance for a problem by its UID.
-- `GET /{PROBLEM_UID}/instance_info`: Query instance metadata with pagination and filtering support.
-- `GET /{PROBLEM_UID}/instance_schema`: Return the JSON schema of the instance model.
-- `GET /{PROBLEM_UID}/instance_info/{INSTANCE_UID}`: Retrieve metadata for a specific instance.
-- `GET /{PROBLEM_UID}/problem_info`: Retrieve metadata about the problem, including filters and asset information.
-- `POST /{PROBLEM_UID}/instances/`: Create a new instance and index it for querying. This is protected by an API-Key, which needs to be provided in the request header as `api-key`.
-- `DELETE /{PROBLEM_UID}/instances/{INSTANCE_UID}`: Delete a specific instance by its UID. This is protected by an API-Key, which needs to be provided in the request header as `api-key`.
+- `GET /{PROBLEM_UID}/instances/{INSTANCE_UID}`: Retrieve a specific instance
+  for a problem by its UID.
+- `GET /{PROBLEM_UID}/instance_info`: Query instance metadata with pagination
+  and filtering support.
+- `GET /{PROBLEM_UID}/instance_schema`: Return the JSON schema of the instance
+  model.
+- `GET /{PROBLEM_UID}/instance_info/{INSTANCE_UID}`: Retrieve metadata for a
+  specific instance.
+- `GET /{PROBLEM_UID}/problem_info`: Retrieve metadata about the problem,
+  including filters and asset information.
+- `POST /{PROBLEM_UID}/instances/`: Create a new instance and index it for
+  querying. This is protected by an API-Key, which needs to be provided in the
+  request header as `api-key`.
+- `DELETE /{PROBLEM_UID}/instances/{INSTANCE_UID}`: Delete a specific instance
+  by its UID. This is protected by an API-Key, which needs to be provided in the
+  request header as `api-key`.
 
 ### Assets
 
-Instances can have associated assets (e.g., images or thumbnails). The backend provides endpoints to manage these (optional) assets.
-Note that the assets will be served by the nginx server, and these endpoints are just for managing the assets or getting the asset paths.
+Instances can have associated assets (e.g., images or thumbnails). The backend
+provides endpoints to manage these (optional) assets. Note that the assets will
+be served by the nginx server, and these endpoints are just for managing the
+assets or getting the asset paths.
 
-- `POST /{PROBLEM_UID}/assets/{ASSET_CLASS}/{INSTANCE_UID}`: Upload an asset (e.g., image or thumbnail) for a specific instance. This is protected by an API-Key, which needs to be provided in the request.
-- `GET /{PROBLEM_UID}/assets/{INSTANCE_UID}`: Retrieve all assets associated with a specific instance. The response includes the asset classes and their corresponding file paths.
-- `DELETE /{PROBLEM_UID}/assets/{ASSET_CLASS}/{INSTANCE_UID}`: Delete a specific asset for an instance. This is protected by an API-Key, which needs to be provided in the request.
+- `POST /{PROBLEM_UID}/assets/{ASSET_CLASS}/{INSTANCE_UID}`: Upload an asset
+  (e.g., image or thumbnail) for a specific instance. This is protected by an
+  API-Key, which needs to be provided in the request.
+- `GET /{PROBLEM_UID}/assets/{INSTANCE_UID}`: Retrieve all assets associated
+  with a specific instance. The response includes the asset classes and their
+  corresponding file paths.
+- `DELETE /{PROBLEM_UID}/assets/{ASSET_CLASS}/{INSTANCE_UID}`: Delete a specific
+  asset for an instance. This is protected by an API-Key, which needs to be
+  provided in the request.
 
 ### Solutions (Optional)
 
-If solutions are configured for a problem class, the backend provides endpoints to manage solutions.
+If solutions are configured for a problem class, the backend provides endpoints
+to manage solutions.
 
-- `GET /{PROBLEM_UID}/solutions/{SOLUTION_UID}`: Retrieve a specific solution by its UID.
-- `GET /{PROBLEM_UID}/solution_info/{INSTANCE_UID}`: Retrieve paginated solution metadata for a specific instance.
-- `GET /{PROBLEM_UID}/solution_schema`: Retrieve the JSON schema of the solution model.
-- `POST /{PROBLEM_UID}/solutions`: Enter a new solution for a specific instance. The solution must reference a valid instance UID. This is protected by an API-Key, which needs to be provided in the request header as `api-key`.
-- `DELETE /{PROBLEM_UID}/solutions/{SOLUTION_UID}`: Delete a specific solution by its UID. This operation also removes the solution from the index. This is protected by an API-Key, which needs to be provided in the request header as `api-key`.
+- `GET /{PROBLEM_UID}/solutions/{SOLUTION_UID}`: Retrieve a specific solution by
+  its UID.
+- `GET /{PROBLEM_UID}/solution_info/{INSTANCE_UID}`: Retrieve paginated solution
+  metadata for a specific instance.
+- `GET /{PROBLEM_UID}/solution_schema`: Retrieve the JSON schema of the solution
+  model.
+- `POST /{PROBLEM_UID}/solutions`: Enter a new solution for a specific instance.
+  The solution must reference a valid instance UID. This is protected by an
+  API-Key, which needs to be provided in the request header as `api-key`.
+- `DELETE /{PROBLEM_UID}/solutions/{SOLUTION_UID}`: Delete a specific solution
+  by its UID. This operation also removes the solution from the index. This is
+  protected by an API-Key, which needs to be provided in the request header as
+  `api-key`.
 
 ## Rules for UIDs
 
-Unique identifiers (UIDs) are essential for maintaining consistency and avoiding conflicts across the repository, ensuring smooth operation and data integrity.
+Unique identifiers (UIDs) are essential for maintaining consistency and avoiding
+conflicts across the repository, ensuring smooth operation and data integrity.
 
-- **Problem UIDs**: Must be unique across the entire repository. They can contain alphanumeric characters, underscores, and hyphens. E.g., it can be `knapsack`, `tsp`, or `my_problem_class`. Slashes are not allowed in problem UIDs because the repository organizes problems in a flat structure, ensuring simplicity and avoiding hierarchical complexities that could arise from nested paths.
-- **Instance UIDs**: Must be unique within a problem class, but can be reused across different problem classes. They are allowed to contain alphanumeric characters, underscores, hyphens, and slashes. E.g., it can be `my_instance_1`, `my_instance-2`, or `my/instance/3`. The slash can be used to create a hierarchy, e.g., using the benchmark name as a prefix (`tsplib/a280`). Instance UIDs are not allowed to start or end with a slash.
+- **Problem UIDs**: Must be unique across the entire repository. They can
+  contain alphanumeric characters, underscores, and hyphens. E.g., it can be
+  `knapsack`, `tsp`, or `my_problem_class`. Slashes are not allowed in problem
+  UIDs because the repository organizes problems in a flat structure, ensuring
+  simplicity and avoiding hierarchical complexities that could arise from nested
+  paths.
+- **Instance UIDs**: Must be unique within a problem class, but can be reused
+  across different problem classes. They are allowed to contain alphanumeric
+  characters, underscores, hyphens, and slashes. E.g., it can be
+  `my_instance_1`, `my_instance-2`, or `my/instance/3`. The slash can be used to
+  create a hierarchy, e.g., using the benchmark name as a prefix
+  (`tsplib/a280`). Instance UIDs are not allowed to start or end with a slash.
 - **Solution UIDs**: Will be automatically generated by the backend.
 
 ## Swagger UI
 
-You can explore the API using the Swagger UI at [http://127.0.0.1/docs](http://127.0.0.1/docs) using the example configuration.
+You can explore the API using the Swagger UI at
+[http://127.0.0.1/docs](http://127.0.0.1/docs) using the example configuration.
 
 ![Swagger UI Screenshot](.assets/swagger.png)
 
 ## Example API Usage
 
-Here is an example of how to use the API to upload a new instance and retrieve it:
+Here is an example of how to use the API to upload a new instance and retrieve
+it:
 
 ```python
 import requests
 
+
 class Connector:
-    def __init__(self, base_url: str, problem_uid: str, api_key: str|None = None):
+    def __init__(self, base_url: str, problem_uid: str, api_key: str | None = None):
         self.base_url = base_url
         self.problem_uid = problem_uid
         self.api_key = api_key
 
     def get_instance_schema(self):
         """Returns the schema for problem instances."""
-        response = requests.get(
-            f"{self.base_url}/{self.problem_uid}/instance_schema")
+        response = requests.get(f"{self.base_url}/{self.problem_uid}/instance_schema")
         response.raise_for_status()
         return response.json()
-    
+
     def get_instance(self, instance_uid: str):
         """Fetches a specific problem instance by its UID."""
         response = requests.get(
-            f"{self.base_url}/{self.problem_uid}/instances/{instance_uid}")
+            f"{self.base_url}/{self.problem_uid}/instances/{instance_uid}"
+        )
         response.raise_for_status()
         return response.json()
-    
-    def get_all_instance_info(self, offset: int = 0, limit: int = 100, params: dict|None = None):
+
+    def get_all_instance_info(
+        self, offset: int = 0, limit: int = 100, params: dict | None = None
+    ):
         """Fetches all problem instances."""
         if params is None:
             params = {}
-        response = requests.get(f"{self.base_url}/{self.problem_uid}/instance_info", 
-                                params={"offset": offset, "limit": limit}.update(params))
+        response = requests.get(
+            f"{self.base_url}/{self.problem_uid}/instance_info",
+            params={"offset": offset, "limit": limit}.update(params),
+        )
         response.raise_for_status()
         return response.json()
-    
+
     def get_instance_info(self, instance_uid: str):
         """Fetches information about a specific problem instance."""
         response = requests.get(
-            f"{self.base_url}/{self.problem_uid}/instance_info/{instance_uid}")
+            f"{self.base_url}/{self.problem_uid}/instance_info/{instance_uid}"
+        )
         response.raise_for_status()
         return response.json()
-    
+
     def get_problem_info(self):
         """Fetches information about the problem."""
         response = requests.get(f"{self.base_url}/{self.problem_uid}/problem_info/")
         response.raise_for_status()
         return response.json()
-    
+
     def upload_instance(self, instance: BaseModel):
         """Uploads a new problem instance."""
         headers = {}
         if self.api_key:
             headers["api-key"] = self.api_key
-            
+
         response = requests.post(
             f"{self.base_url}/{self.problem_uid}/instances",
             json=instance.model_dump(mode="json"),
-            headers=headers
+            headers=headers,
         )
         response.raise_for_status()
         return response.json()
-    
+
     def delete_instance(self, instance_uid: str):
         """Deletes a problem instance by its UID."""
         headers = {}
         if self.api_key:
             headers["api-key"] = self.api_key
-            
+
         response = requests.delete(
             f"{self.base_url}/{self.problem_uid}/instances/{instance_uid}",
-            headers=headers
+            headers=headers,
         )
         response.raise_for_status()
         return response.json()
-    
+
     # assets
     def get_assets(self, instance_uid: str):
         """Fetches all assets for a problem instance."""
         response = requests.get(
-            f"{self.base_url}/{self.problem_uid}/assets/{instance_uid}")
+            f"{self.base_url}/{self.problem_uid}/assets/{instance_uid}"
+        )
         response.raise_for_status()
         return response.json()
-    
+
     def upload_asset(self, instance_uid: str, asset_class: str, asset_path: str):
         """Uploads an asset for a problem instance."""
         headers = {}
         if self.api_key:
             headers["api-key"] = self.api_key
-        
+
         # Read the file data from the provided path
-        with open(asset_path, 'rb') as f:
-            files = {'file': f}
-            
+        with open(asset_path, "rb") as f:
+            files = {"file": f}
+
             response = requests.post(
-            f"{self.base_url}/{self.problem_uid}/assets/{asset_class}/{instance_uid}",
-            files=files,
-            headers=headers
+                f"{self.base_url}/{self.problem_uid}/assets/{asset_class}/{instance_uid}",
+                files=files,
+                headers=headers,
             )
             print(response.text)
-            
+
         response.raise_for_status()
         return response.json()
-    
+
     def delete_asset(self, instance_uid: str, asset_class: str):
         """Deletes a specific asset for a problem instance."""
         headers = {}
         if self.api_key:
             headers["api-key"] = self.api_key
-            
+
         response = requests.delete(
             f"{self.base_url}/{self.problem_uid}/assets/{asset_class}/{instance_uid}",
-            headers=headers
+            headers=headers,
         )
         response.raise_for_status()
         return response.json()
-    
+
     # solutions
     def get_solution_schema(self):
         """Returns the schema for problem solutions."""
-        response = requests.get(
-            f"{self.base_url}/{self.problem_uid}/solution_schema")
+        response = requests.get(f"{self.base_url}/{self.problem_uid}/solution_schema")
         response.raise_for_status()
         return response.json()
-    
+
     def get_solution_info(self, instance_uid: str, offset: int = 0, limit: int = 100):
         """Fetches the solutions for a specific problem instance."""
         response = requests.get(
-            f"{self.base_url}/{self.problem_uid}/solution_info/{instance_uid}", 
-            params={"offset": offset, "limit": limit})
+            f"{self.base_url}/{self.problem_uid}/solution_info/{instance_uid}",
+            params={"offset": offset, "limit": limit},
+        )
         response.raise_for_status()
         return response.json()
-    
+
     def upload_solution(self, solution: BaseModel):
         """Uploads a new solution for a problem instance."""
         headers = {}
         if self.api_key:
             headers["api-key"] = self.api_key
-            
+
         response = requests.post(
-            f"{self.base_url}/{self.problem_uid}/solutions/",
+            f"{self.base_url}/{self.problem_uid}/solutions",
             json=solution.model_dump(mode="json"),
-            headers=headers
+            headers=headers,
         )
         response.raise_for_status()
         return response.json()
-    
+
     def get_solution(self, solution_uid: str):
         """Fetches a specific solution by its UID."""
         response = requests.get(
-            f"{self.base_url}/{self.problem_uid}/solutions/{solution_uid}")
-        print(response.text)
+            f"{self.base_url}/{self.problem_uid}/solutions/{solution_uid}"
+        )
         response.raise_for_status()
         return response.json()
-    
+
     def delete_solution(self, solution_uid: str):
         """Deletes a specific solution for a problem instance."""
         headers = {}
         if self.api_key:
             headers["api-key"] = self.api_key
-            
+
         response = requests.delete(
             f"{self.base_url}/{self.problem_uid}/solutions/{solution_uid}",
-            headers=headers
+            headers=headers,
         )
-        print(response.text)
         response.raise_for_status()
         return response.json()
-    
-# For the local example configuration    
-connector = Connector(base_url="http://127.0.0.1", problem_uid=PROBLEM_UID, api_key="3456345-456-456")
 
+
+# For the local example configuration
+connector = Connector(
+    base_url="http://127.0.0.1", problem_uid=PROBLEM_UID, api_key="3456345-456-456"
+)
 ```
-
 
 ## Changelog
 
-- 2025-05-26: Changed some parameters to follow some conventions, e.g., `api_key` became `api-key` in the request header.
+- 2025-05-26: Changed some parameters to follow some conventions, e.g.,
+  `api_key` became `api-key` in the request header.

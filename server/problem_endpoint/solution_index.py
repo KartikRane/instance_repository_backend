@@ -19,7 +19,7 @@ class SolutionIndex:
         Generate the index table for the solution index.
         """
         annotations = {}
-        class_name = f"{self.problem_info.problem_uid.replace("-", "_")}_solution_index"
+        class_name = f"{self.problem_info.problem_uid.replace('-', '_')}_solution_index"
         class_dict = {"__tablename__": class_name}
 
         # index field
@@ -62,7 +62,7 @@ class SolutionIndex:
         return result is not None
 
     def _generate_paginated_response(self) -> Type[BaseModel]:
-        class_name = f"{self.problem_info.problem_uid.replace("-", "_")}_solution_paginated_response"
+        class_name = f"{self.problem_info.problem_uid.replace('-', '_')}_solution_paginated_response"
         class_dict = {
             "items": Field(..., description="The items in the current page"),
             "offset": Field(..., description="The offset of the current page"),

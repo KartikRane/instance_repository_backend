@@ -13,7 +13,7 @@ def build_asset_routes(
     def add_asset(
         asset_class: str,
         instance_uid: str,
-        file: UploadFile = File(...), 
+        file: UploadFile = File(...),
         api_key: str = Depends(verify_api_key),
     ):
         """
