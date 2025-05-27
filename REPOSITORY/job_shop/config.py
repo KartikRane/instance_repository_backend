@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, PositiveInt
+from pydantic import BaseModel, Field, PositiveInt, NonNegativeInt
 from typing import Optional
 from pathlib import Path
 
@@ -32,8 +32,8 @@ class Job(BaseModel):
     operations: list[Operation] = Field(
         ..., description="Operations in the order they must be processed."
     )
-    release_time: PositiveInt = Field(
-        0, description="Earliest start time for this job."
+    release_time: NonNegativeInt = Field(
+        ..., description="Earliest start time for this job."
     )
 
 class JobShopInstance(BaseModel):
