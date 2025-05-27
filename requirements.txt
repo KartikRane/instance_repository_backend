@@ -3,3 +3,4 @@ psycopg2
 pyyaml
 sqlmodel
 uvicorn
+python-multipart

@@ -28,7 +28,7 @@ def build_solution_routes(
     SolutionModel: Type[BaseModel] = problem_info.solution_model
     assert solution_index is not None, "The solution index should not be None"
 
-    @router.get("/solutions/{solution_uid}", response_model=SolutionModel)
+    @router.get("/solutions/{solution_uid:path}", response_model=SolutionModel)
     def get_solution(solution_uid: str):
         """
         Retrieve a specific solution by its UID.
@@ -36,6 +36,7 @@ def build_solution_routes(
         try:
             return solution_repository.read_solution(solution_uid)
         except KeyError as ke:
+            logging.error(f"Solution {solution_uid} not found: {ke}")
             raise HTTPException(status_code=404, detail=str(ke))
 
     @router.get(
@@ -87,7 +88,7 @@ def build_solution_routes(
             solution_uid=solution_uid, solution=solution, session=session
         )
 
-    @router.delete("/solutions/{solution_uid}")
+    @router.delete("/solutions/{solution_uid:path}")
     def delete_solution(
         solution_uid: str,
         session: Session = Depends(get_db),

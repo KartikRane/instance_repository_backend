@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Type, TypeVar, Generic
 from pydantic import BaseModel
@@ -20,6 +21,10 @@ def check_uid_pattern(instance_uid: str, fail: bool = True) -> bool:
     ):
         if not fail:
             return False
+        logging.error(
+            "The instance_uid %s is not valid. It can only contain alphanumeric characters, dashes, and underscores, and slashes for subdirectories. It cannot start or end with a slash.",
+            instance_uid,
+        )
         raise ValueError(
             "The instance_uid can only contain alphanumeric characters, dashes, and underscores, and slashes for subdirectories."
         )
@@ -61,6 +66,7 @@ class LocalFileSystemWithCompression:
         """
         path = (self.root / uid).with_suffix(".json.xz")
         if not path.exists():
+            logging.error("LocalFileSystemWithCompression: No file found for %s under %s", uid, path)
             raise KeyError(f"No file found for {uid}")
         with lzma.open(path, "rt") as file:
             return model.model_validate_json(file.read())
@@ -126,6 +132,11 @@ class InstanceRepository(Generic[T]):
         check_uid_pattern(instance_uid)
         instance = self.file_system.load(self.instance_model, instance_uid)
         if getattr(instance, self.problem_info.uid_attribute) != instance_uid:
+            logging.error(
+                "The instance_uid of the instance %s does not match the file name %s",
+                getattr(instance, self.problem_info.uid_attribute),
+                instance_uid,
+            )
             raise ValueError(
                 f"The instance_uid of the instance {instance_uid} does not match the file name"
             )
@@ -136,6 +147,11 @@ class InstanceRepository(Generic[T]):
         Write the instance to the file system.
         """
         if not isinstance(instance, self.instance_model):
+            logging.error(
+                "The instance %s is not of the correct type %s",
+                instance,
+                self.instance_model,
+            )
             raise ValueError("The instance is not of the correct type")
         instance_uid = getattr(instance, self.problem_info.uid_attribute)
         check_uid_pattern(instance_uid)

@@ -45,7 +45,7 @@ def build_routes_for_problem(
     QuerySchema: Type[BaseModel] = instance_index.QuerySchema
     asset_repository = AssetRepository(problem_info)
 
-    @router.get("/instances/{instance_uid}", response_model=InstanceModel)
+    @router.get("/instances/{instance_uid:path}", response_model=InstanceModel)
     def get_instance(instance_uid: str):
         """
         Retrieve a specific instance by its UID.
@@ -89,7 +89,7 @@ def build_routes_for_problem(
         return InstanceModel.model_json_schema()
 
     @router.get(
-        "/instance_info/{instance_uid}",
+        "/instance_info/{instance_uid:path}",
         response_model=dict[str, str | int | float | None],
     )
     def get_instance_info(instance_uid: str, session: Session = Depends(get_db)):
@@ -128,7 +128,7 @@ def build_routes_for_problem(
         instance_repository.write_instance(instance)
         instance_index.index_instance(instance, session)
 
-    @router.delete("/instances/{instance_uid}")
+    @router.delete("/instances/{instance_uid:path}")
     def delete_instance(
         instance_uid: str,
         session: Session = Depends(get_db),
