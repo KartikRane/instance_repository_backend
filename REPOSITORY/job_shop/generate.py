@@ -1,3 +1,12 @@
+import lzma
+from pathlib import Path
+from uuid import uuid4
+import urllib.request
+
+# Maintain old-style import hack for repository root
+REPOSITORY_ROOT = Path(__file__).resolve().parent.parent.parent
+sys.path.append(str(REPOSITORY_ROOT))
+
 from config import (
     JobShopInstance,
     Job,
@@ -6,10 +15,11 @@ from config import (
     JOBSHOP_BENCHMARK_URLS,
     JOBSHOP_DOWNLOAD_DIR,
 )
-import lzma
-from pathlib import Path
-from uuid import uuid4
-import urllib.request
+from connector import Connector
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
 
 # The job shop benchmark library does not have a zip folder so the download is done via the links provided below.
 # New links can be added according to the requirement.
@@ -125,16 +135,37 @@ def parse_jobshop_instance(file_path: Path) -> JobShopInstance:
 
 
 if __name__ == "__main__":
+    # Configuration via environment variables
+    base_url = os.environ.get('BASE_URL', 'http://127.0.0.1')
+    problem_uid = os.environ.get('PROBLEM_UID', 'knapsackjob_shop')
+    api_key = os.environ.get('API_KEY', "3456345-456-456")
+    zip_url = os.environ.get(
+        'ZIP_URL',
+        'https://github.com/JorikJooken/knapsackProblemInstances/archive/refs/heads/master.zip',
+    )
+    work_dir = Path(os.environ.get('WORK_DIR', Path.cwd()))
+
+    zip_path = work_dir / 'jooken_master.zip'
+    extract_dir = work_dir / 'jooken_master'
+
+    #download benchmark files if not present
     download_missing_files()
+
+    connector = Connector(
+        base_url=base_url,
+        problem_uid=problem_uid,
+        api_key=api_key,
+    )
 
     for file_path in JOBSHOP_DOWNLOAD_DIR.glob("*.txt"):
         try:
-            print(
-                f"------------------------------- Processing: {file_path.name}------------------------"
-            )
+            print(f"-----Processing: {file_path.name}---------")
             instance = parse_jobshop_instance(file_path)
+            logger.info("Uploading %s (uid=%s)", instance, instance.instance_uid)
+            resp = connector.upload_instance(instance)
+            logger.info("Response: %s", resp)
             write_to_json_xz(instance)
         except Exception as e:
-            print(f" ERROR !!! in  processing {file_path.name}: {e}")
+                print(f" ERROR !!! in  processing {file_path.name}: {e}")
 
     print(" All Job Shop instances processed.")
