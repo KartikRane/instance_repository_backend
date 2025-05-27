@@ -2,9 +2,9 @@ import logging
 from pathlib import Path
 from typing import Type, TypeVar, Generic
 from pydantic import BaseModel
-import lzma
 
 from .problem_info import ProblemInfo
+from .safe_file_operations import SafeFileOperations
 
 # Define a generic type variable for the instance model
 T = TypeVar("T", bound=BaseModel)
@@ -39,13 +39,14 @@ class LocalFileSystemWithCompression:
     def __init__(self, root: Path):
         self.root = root
         self.root.mkdir(parents=True, exist_ok=True)
+        self._safe_file_ops = SafeFileOperations(self.root)
 
     def exists(self, uid: str) -> bool:
         """
         Check if a file with the given uid exists.
         """
         path = (self.root / uid).with_suffix(".json.xz")
-        return path.exists()
+        return self._safe_file_ops.exists(path)
 
     def save(self, data: BaseModel, uid: str, exists_ok: bool = False) -> Path:
         """
@@ -54,9 +55,9 @@ class LocalFileSystemWithCompression:
         path = Path(uid)
         path = self.root / path.with_suffix(".json.xz")
         path.parent.mkdir(parents=True, exist_ok=True)
-        if path.exists() and not exists_ok:
+        if self._safe_file_ops.exists(path) and not exists_ok:
             raise ValueError(f"The file {uid} already exists")
-        with lzma.open(path, "wt") as file:
+        with self._safe_file_ops.lzma_open(path, "wt") as file:
             file.write(data.model_dump_json())
         return path.relative_to(self.root)
 
@@ -65,14 +66,14 @@ class LocalFileSystemWithCompression:
         Load the data from the given path.
         """
         path = (self.root / uid).with_suffix(".json.xz")
-        if not path.exists():
+        if not self._safe_file_ops.exists(path):
             logging.error(
                 "LocalFileSystemWithCompression: No file found for %s under %s",
                 uid,
                 path,
             )
             raise KeyError(f"No file found for {uid}")
-        with lzma.open(path, "rt") as file:
+        with self._safe_file_ops.lzma_open(path, "rt") as file:
             return model.model_validate_json(file.read())
 
     def delete(self, uid: str):

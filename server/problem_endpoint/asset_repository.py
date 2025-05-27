@@ -1,4 +1,6 @@
 from pathlib import Path
+
+from .safe_file_operations import SafeFileOperations
 from .instance_repository import check_uid_pattern
 from .problem_info import ProblemInfo
 
@@ -7,6 +9,7 @@ class AssetRepository:
     def __init__(self, problem_info: ProblemInfo):
         self.problem_info = problem_info
         self.root = problem_info.assets_root
+        self._safe_file_ops = SafeFileOperations(self.root)
 
     def add(self, asset_class, instance_uid, asset, exists_ok: bool = False) -> Path:
         """
@@ -28,7 +31,7 @@ class AssetRepository:
         """
         check_uid_pattern(instance_uid)
         asset_dir = self.root
-        if not asset_dir.exists():
+        if not self._safe_file_ops.exists(asset_dir):
             return
         if asset_class is not None:
             asset_path = (
@@ -36,13 +39,11 @@ class AssetRepository:
                 / asset_class
                 / f"{instance_uid}.{self.problem_info.assets[asset_class]}"
             )
-            if asset_path.exists():
-                asset_path.unlink()
+            self._safe_file_ops.delete(asset_path)
         else:
             for asset_class, extension in self.problem_info.assets.items():
                 asset_path = asset_dir / asset_class / f"{instance_uid}.{extension}"
-                if asset_path.exists():
-                    asset_path.unlink()
+                self._safe_file_ops.delete(asset_path)
 
     def available_assets_for_instance(self, instance_uid: str) -> dict[str, Path]:
         """
@@ -50,12 +51,12 @@ class AssetRepository:
         """
         check_uid_pattern(instance_uid)
         asset_dir = self.root
-        if not asset_dir.exists():
+        if not self._safe_file_ops.exists(asset_dir):
             return {}
         assets = {}
         for asset_class, extension in self.problem_info.assets.items():
             asset_path = asset_dir / asset_class / f"{instance_uid}.{extension}"
-            if asset_path.exists():
+            if self._safe_file_ops.exists(asset_path):
                 assets[asset_class] = asset_path.relative_to(self.root)
         return assets
 

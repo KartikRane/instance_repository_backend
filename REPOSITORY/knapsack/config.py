@@ -26,6 +26,17 @@ class KnapsackInstance(BaseModel):
             "Calculated as the sum of item weights divided by knapsack capacity."
         ),
     )
+    @staticmethod
+    def calculate_weight_capacity_ratio(
+        item_weights: list[NonNegativeFloat | NonNegativeInt],
+        capacity: NonNegativeFloat | NonNegativeInt,
+    ) -> PositiveFloat:
+        """Calculate the weight to capacity ratio."""
+        if capacity == 0:
+            return float('inf')  # Avoid division by zero, return infinity if capacity is zero
+        total_weight = sum(item_weights)
+        return total_weight / capacity
+
     integral: bool = Field(
         default=False,
         description="Specifies if the capacity, values, and weights are integral.",
