@@ -1,8 +1,9 @@
 import lzma
 import os
 from pathlib import Path
-from uuid import uuid4
 import urllib.request
+import logging
+import sys
 
 # Maintain old-style import hack for repository root
 REPOSITORY_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -13,8 +14,7 @@ from config import (
     Job,
     Operation,
     Machine,
-    JOBSHOP_BENCHMARK_URLS,
-    JOBSHOP_DOWNLOAD_DIR,
+    PROBLEM_UID
 )
 from connector import Connector
 
@@ -138,7 +138,7 @@ def parse_jobshop_instance(file_path: Path) -> JobShopInstance:
 if __name__ == "__main__":
     # Configuration via environment variables
     base_url = os.environ.get('BASE_URL', 'http://127.0.0.1')
-    problem_uid = os.environ.get('PROBLEM_UID', 'job_shop')
+    problem_uid = os.environ.get('PROBLEM_UID', PROBLEM_UID)
     api_key = os.environ.get('API_KEY', "3456345-456-456")
 
     #download benchmark files if not present
@@ -154,10 +154,7 @@ if __name__ == "__main__":
         try:
             print(f"-----Processing: {file_path.name}---------")
             instance = parse_jobshop_instance(file_path)
-            logger.info("Uploading %s (uid=%s)", instance, instance.instance_uid)
             resp = connector.upload_instance(instance)
-            logger.info("Response: %s", resp)
-            write_to_json_xz(instance)
         except Exception as e:
                 print(f" ERROR !!! in  processing {file_path.name}: {e}")
 
