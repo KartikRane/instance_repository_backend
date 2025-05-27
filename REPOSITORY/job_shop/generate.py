@@ -94,7 +94,7 @@ def parse_jobshop_instance(file_path: Path) -> JobShopInstance:
         jobs.append(Job(job_id=job_id, operations=ops))
 
     instance = JobShopInstance(
-        instance_uid=f"{file_path.stem}_{uuid4().hex[:8]}",
+        instance_uid=f"JobShop_{file_path.stem}", # changed instance UID only for job shop untill final format is confirmed
         origin=file_path.name,
         machines=machine_objs,
         jobs=jobs,
