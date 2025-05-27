@@ -273,13 +273,35 @@ The backend exposes several routes for managing instances and solutions.
 - `GET /{PROBLEM_UID}/instances/{INSTANCE_UID}`: Retrieve a specific instance
   for a problem by its UID.
 - `GET /{PROBLEM_UID}/instance_info`: Query instance metadata with pagination
-  and filtering support.
+  and filtering support. Use `GET /{PROBLEM_UID}/problem_info` to automatically
+  explore the available query parameters. You can also use the Swagger UI to do that.
+  ![Swagger UI Screenshot](.assets/swagger_instance_info.png)
 - `GET /{PROBLEM_UID}/instance_schema`: Return the JSON schema of the instance
   model.
 - `GET /{PROBLEM_UID}/instance_info/{INSTANCE_UID}`: Retrieve metadata for a
   specific instance.
 - `GET /{PROBLEM_UID}/problem_info`: Retrieve metadata about the problem,
   including filters and asset information.
+    - This can look like this, and tells you which query parameters you can use in `GET /{PROBLEM_UID}/instance_info`, where range filters use the `__geq` and `__leq` suffixes (e.g., `weight_capacity_ratio__geq=0.1`) for minimum and maximum values, respectively, and boolean filters are simply added as query parameters:
+    ```json
+    {'problem_uid': 'knapsack',
+    'range_filters': [{'field_name': 'num_items',
+    'min_val': 11.0,
+    'max_val': 1000.0,
+    'problem_uid': 'knapsack'},
+    {'field_name': 'weight_capacity_ratio',
+    'min_val': 0.001174003923964717,
+    'max_val': 0.9983667695638433,
+    'problem_uid': 'knapsack'}],
+    'boolean_filters': ['integral'],
+    'sort_fields': ['num_items', 'weight_capacity_ratio'],
+    'display_fields': ['instance_uid',
+    'num_items',
+    'weight_capacity_ratio',
+    'integral',
+    'origin'],
+    'assets': {'thumbnail': 'png', 'image': 'png'}}
+    ```
 - `POST /{PROBLEM_UID}/instances`: Create a new instance and index it for
   querying. This is protected by an API-Key, which needs to be provided in the
   request header as `api-key`.
@@ -364,22 +386,24 @@ from pydantic import BaseModel
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
+
 class Connector:
     """
     A simple example connector that logs all HTTP calls made, including the URL, parameters, payload, and responses.
     """
+
     def __init__(
         self,
         base_url: str,
         problem_uid: str,
         api_key: str | None = None,
     ) -> None:
-        self.base_url = base_url.rstrip('/')
+        self.base_url = base_url.rstrip("/")
         self.problem_uid = problem_uid
         self.session = Session()
         if api_key:
             # automatically include API key on all requests
-            self.session.headers.update({'api-key': api_key})
+            self.session.headers.update({"api-key": api_key})
 
     def _request(
         self,
@@ -424,11 +448,11 @@ class Connector:
 
     def get_instance_schema(self) -> dict[str, Any]:
         """Returns the schema for problem instances."""
-        return self._request('GET', '/instance_schema')  # type: ignore
+        return self._request("GET", "/instance_schema")  # type: ignore
 
     def get_instance(self, instance_uid: str) -> dict[str, Any]:
         """Fetches a specific problem instance by its UID."""
-        return self._request('GET', f'/instances/{instance_uid}')  # type: ignore
+        return self._request("GET", f"/instances/{instance_uid}")  # type: ignore
 
     def get_all_instance_info(
         self,
@@ -437,32 +461,32 @@ class Connector:
         params: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Fetches all problem instances."""
-        merged: dict[str, Any] = {'offset': offset, 'limit': limit}
+        merged: dict[str, Any] = {"offset": offset, "limit": limit}
         if params:
             merged |= params
-        return self._request('GET', '/instance_info', params=merged)  # type: ignore
+        return self._request("GET", "/instance_info", params=merged)  # type: ignore
 
     def get_instance_info(self, instance_uid: str) -> dict[str, Any]:
         """Fetches information about a specific problem instance."""
-        return self._request('GET', f'/instance_info/{instance_uid}')  # type: ignore
+        return self._request("GET", f"/instance_info/{instance_uid}")  # type: ignore
 
     def get_problem_info(self) -> dict[str, Any]:
         """Fetches information about the problem."""
-        return self._request('GET', '/problem_info/')  # type: ignore
+        return self._request("GET", "/problem_info/")  # type: ignore
 
     def upload_instance(self, instance: BaseModel) -> dict[str, Any]:
         """Uploads a new problem instance."""
-        payload = instance.model_dump(mode='json')
-        return self._request('POST', '/instances', json=payload)  # type: ignore
+        payload = instance.model_dump(mode="json")
+        return self._request("POST", "/instances", json=payload)  # type: ignore
 
     def delete_instance(self, instance_uid: str) -> dict[str, Any]:
         """Deletes a problem instance by its UID."""
-        return self._request('DELETE', f'/instances/{instance_uid}')  # type: ignore
+        return self._request("DELETE", f"/instances/{instance_uid}")  # type: ignore
 
     # Assets
     def get_assets(self, instance_uid: str) -> dict[str, Any]:
         """Fetches all assets for a problem instance."""
-        return self._request('GET', f'/assets/{instance_uid}')  # type: ignore
+        return self._request("GET", f"/assets/{instance_uid}")  # type: ignore
 
     def upload_asset(
         self,
@@ -471,18 +495,18 @@ class Connector:
         asset_path: str,
     ) -> dict[str, Any]:
         """Uploads an asset for a problem instance."""
-        with open(asset_path, 'rb') as f:
-            files_data = {'file': f}
-            return self._request('POST', f'/assets/{asset_class}/{instance_uid}', files=files_data)  # type: ignore
+        with open(asset_path, "rb") as f:
+            files_data = {"file": f}
+            return self._request("POST", f"/assets/{asset_class}/{instance_uid}", files=files_data)  # type: ignore
 
     def delete_asset(self, instance_uid: str, asset_class: str) -> dict[str, Any]:
         """Deletes a specific asset for a problem instance."""
-        return self._request('DELETE', f'/assets/{asset_class}/{instance_uid}')  # type: ignore
+        return self._request("DELETE", f"/assets/{asset_class}/{instance_uid}")  # type: ignore
 
     # Solutions
     def get_solution_schema(self) -> dict[str, Any]:
         """Returns the schema for problem solutions."""
-        return self._request('GET', '/solution_schema')  # type: ignore
+        return self._request("GET", "/solution_schema")  # type: ignore
 
     def get_solution_info(
         self,
@@ -491,30 +515,32 @@ class Connector:
         limit: int = 100,
     ) -> dict[str, Any]:
         """Fetches the solutions for a specific problem instance."""
-        params = {'offset': offset, 'limit': limit}
-        return self._request('GET', f'/solution_info/{instance_uid}', params=params)  # type: ignore
+        params = {"offset": offset, "limit": limit}
+        return self._request("GET", f"/solution_info/{instance_uid}", params=params)  # type: ignore
 
     def upload_solution(self, solution: BaseModel) -> dict[str, Any]:
         """Uploads a new solution for a problem instance."""
-        payload = solution.model_dump(mode='json')
-        return self._request('POST', '/solutions', json=payload)  # type: ignore
+        payload = solution.model_dump(mode="json")
+        return self._request("POST", "/solutions", json=payload)  # type: ignore
 
     def get_solution(self, solution_uid: str) -> dict[str, Any]:
         """Fetches a specific solution by its UID."""
-        return self._request('GET', f'/solutions/{solution_uid}')  # type: ignore
+        return self._request("GET", f"/solutions/{solution_uid}")  # type: ignore
 
     def delete_solution(self, solution_uid: str) -> dict[str, Any]:
         """Deletes a specific solution for a problem instance."""
-        return self._request('DELETE', f'/solutions/{solution_uid}')  # type: ignore
-   
+        return self._request("DELETE", f"/solutions/{solution_uid}")  # type: ignore
 
-    
-# For the local example configuration    
-connector = Connector(base_url="http://127.0.0.1", problem_uid=PROBLEM_UID, api_key="3456345-456-456")
+
+# For the local example configuration
+connector = Connector(
+    base_url="http://127.0.0.1", problem_uid=PROBLEM_UID, api_key="3456345-456-456"
+)
 ```
 
-See [./api_example.ipynb](./api_example.ipynb) for a more detailed example of how to use the API with the above `Connector` class.
-You can freely copy and modify this code, like everything else in this repository.
+See [./api_example.ipynb](./api_example.ipynb) for a more detailed example of
+how to use the API with the above `Connector` class. You can freely copy and
+modify this code, like everything else in this repository.
 
 ## Changelog
 
