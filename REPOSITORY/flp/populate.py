@@ -1,6 +1,5 @@
 import io
 import tarfile
-from tarfile import TarInfo
 
 import requests
 from cflpconfig import PROBLEM_UID as CAP_PROBLEM_UID

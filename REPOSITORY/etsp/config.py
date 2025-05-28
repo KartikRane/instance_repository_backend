@@ -8,8 +8,8 @@ from pydantic import (
 )
 
 
-class FacilityLocationInstance(BaseModel):
-    """Pydantic model representing a facility location problem instance."""
+class EuclideanTravelingSalesmanInstance(BaseModel):
+    """Pydantic model representing a euclidean TSP instance."""
 
     # Metadata
     instance_uid: str = Field(..., description="The unique identifier of the instance.")
@@ -17,32 +17,20 @@ class FacilityLocationInstance(BaseModel):
     comment: str = Field(default="", description="Any comments to the instance.")
 
     # Instance statistics
-    num_cities: PositiveInt = Field(
-        ..., description="The number of cities to allocate."
-    )
-    num_facilities: PositiveInt = Field(
-        ..., description="The number of potential facility locations."
-    )
+    num_points: PositiveInt = Field(..., description="The number of points to tour.")
     is_integral: bool = Field(
         default=False,
-        description="Specifies if the facility opening and connection costs are integral.",
+        description="Specifies if the point coordinates are integral.",
     )
 
     # Instance data
-    opening_cost: list[NonNegativeFloat | NonNegativeInt] = Field(
+    points: list[tuple[float | int, float | int]] = Field(
         ...,
-        description="Opening cost of each facility.",
-    )
-    path_cost: list[list[NonNegativeFloat | NonNegativeInt]] = Field(
-        ...,
-        description=(
-            "Cost to to travel from each city (outer) to each facility (inner). "
-            "`path_cost[i][k]` is the cost from city *i* to facility *k*."
-        ),
+        description="List of points as (x,y) tuples.",
     )
 
 
-class FacilityLocationSolution(BaseModel):
+class EuclideanTravelingSalesmanSolution(BaseModel):
     """Pydantic model representing a solution to a facility location problem instance."""
 
     # Solution metadata
@@ -50,52 +38,46 @@ class FacilityLocationSolution(BaseModel):
         ..., description="The unique identifier of the corresponding instance."
     )
     objective: NonNegativeFloat = Field(
-        ..., description="The total cost of opened facilites and city paths."
+        ...,
+        description="The total tour length.",
     )
     authors: str = Field(
         ..., description="The authors or contributors of the solution."
     )
 
     # Solution data
-    allocations: list[NonNegativeInt] = Field(
-        ...,
-        description=(
-            "Facility index for every instance City. "
-            "If list[*k*] = *l*, then city *k* is connected to facility *l*."
-        ),
+    order: list[NonNegativeInt] = Field(
+        ..., description=("Indices of points in visiting order.")
     )
 
 
 # Configuration constants for the multi-knapsack problem
 
 # Unique identifier for the problem
-PROBLEM_UID = "facility-location"
+PROBLEM_UID = "euclidean-tsp"
 
 # Shared attribute name for instances and solutions
 INSTANCE_UID_ATTRIBUTE = "instance_uid"
 
 # Schema definitions
-INSTANCE_SCHEMA = FacilityLocationInstance
-SOLUTION_SCHEMA = FacilityLocationSolution
+INSTANCE_SCHEMA = EuclideanTravelingSalesmanInstance
+SOLUTION_SCHEMA = EuclideanTravelingSalesmanSolution
 
 # Filtering and sorting configurations
 RANGE_FILTERS = [
-    "num_cities",
-    "num_facilities",
+    "num_points",
 ]  # Fields usable for range filters
 BOOLEAN_FILTERS = [
     "is_integral",
 ]  # Boolean fields usable for filters
 SORT_FIELDS = [
-    "num_cities",
-    "num_facilities",
+    "num_points",
 ]  # Fields for sorting
 
 # Fields for display purposes in instance overviews
 DISPLAY_FIELDS = [
     "instance_uid",
-    "num_cities",
-    "num_facilities",
+    "num_points",
     "is_integral",
     "origin",
     "comment",

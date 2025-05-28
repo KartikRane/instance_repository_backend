@@ -60,7 +60,9 @@ class CapacitatedFacilityLocationSolution(BaseModel):
     objective: NonNegativeFloat = Field(
         ..., description="The total cost of opened facilites and city paths."
     )
-    authors: str = Field(..., description="The authors or contributors of the solution")
+    authors: str = Field(
+        ..., description="The authors or contributors of the solution."
+    )
 
     # Solution data
     allocations: list[NonNegativeInt] = Field(
@@ -104,6 +106,7 @@ DISPLAY_FIELDS = [
     "num_facilities",
     "is_integral",
     "origin",
+    "comment",
 ]
 
 # Assets associated with the multi-knapsack problem
