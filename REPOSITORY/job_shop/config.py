@@ -33,7 +33,7 @@ class Job(BaseModel):
         ..., description="Operations in the order they must be processed."
     )
     release_time: NonNegativeInt = Field(
-        ..., description="Earliest start time for this job."
+        0, description="Earliest start time for this job."
     )
 
 class JobShopInstance(BaseModel):

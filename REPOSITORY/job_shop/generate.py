@@ -1,3 +1,4 @@
+import json
 import lzma
 import os
 from pathlib import Path
@@ -59,7 +60,7 @@ def write_to_json_xz(instance: JobShopInstance):
     path = Path(f"./instances/{instance.instance_uid}.json.xz")
     path.parent.mkdir(parents=True, exist_ok=True)
     with lzma.open(path, "wt") as f:
-        f.write(instance.model_dump_json(indent=2))
+        f.write(json.dumps(instance.dict(), indent=2))
 
 
 def parse_jobshop_instance(file_path: Path) -> JobShopInstance:
@@ -105,21 +106,23 @@ def parse_jobshop_instance(file_path: Path) -> JobShopInstance:
 
     # Build machine objects
     machine_objs = [
-        Machine(machine_id=m_id, name=f"Machine {m_id}")
-        for m_id in range(1, number_of_machines + 1)
+        Machine(machine_id=m_id, name=f"Machine {m_id + 1}")
+        for m_id in range(number_of_machines)
     ]
 
     # Build jobs with operations
     jobs = []
-    for job_id in range(1, number_of_jobs + 1):
+    for job_index in range(number_of_jobs):
         ops = []
         for op_index in range(number_of_machines):
-            machine_id = machines[job_id - 1][op_index]
-            processing_time = times[job_id - 1][op_index]
+            machine_id = machines[job_index][op_index]
+            processing_time = times[job_index][op_index]
             ops.append(
                 Operation(machine_id=machine_id, processing_time=processing_time)
             )
-        jobs.append(Job(job_id=job_id, operations=ops))
+        jobs.append(Job(job_id=job_index, operations=ops))
+
+
 
     instance = JobShopInstance(
         instance_uid=f"OR-Library/{file_path.stem}",
@@ -130,7 +133,6 @@ def parse_jobshop_instance(file_path: Path) -> JobShopInstance:
         number_of_jobs=number_of_jobs,
         number_of_machines=number_of_machines,
     )
-
 
     return instance
 
@@ -154,6 +156,7 @@ if __name__ == "__main__":
         try:
             print(f"-----Processing: {file_path.name}---------")
             instance = parse_jobshop_instance(file_path)
+            write_to_json_xz(instance)
             resp = connector.upload_instance(instance)
         except Exception as e:
                 print(f" ERROR !!! in  processing {file_path.name}: {e}")

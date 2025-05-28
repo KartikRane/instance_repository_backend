@@ -6,11 +6,6 @@ from pathlib import Path
 from zipfile import ZipFile
 from uuid import uuid4
 
-"""
-Benchmark src :
-http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/A/A-n32-k5.vrp
-"""
-
 CVRP_ZIP_URL = "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-A.zip"
 CVRP_ZIP_PATH = Path("data/cvrp_benchmarks.zip")
 CVRP_EXTRACT_DIR = Path("data/cvrp_benchmarks")
@@ -122,7 +117,7 @@ def parse_cvrp(file_path: Path, instance_number: int):
 
     instance = CvrpInstance(
         instance_uid=f"CVRPLIB/{file_path.stem}/{instance_number}",
-        origin=file_path.name,
+        origin="http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/A/A-n32-k5.vrp",
         vehicle_capacity=vehicle_capacity,
         depot=depot_coord,
         customers=customers,

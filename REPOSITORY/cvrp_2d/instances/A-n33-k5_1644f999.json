@@ -1,0 +1,203 @@
+{
+  "instance_uid": "A-n33-k5_1644f999",
+  "origin": "cvrp_benchmark_2d",
+  "vehicle_capacity": 100,
+  "depot": {
+    "x": 42.0,
+    "y": 68.0
+  },
+  "customers": [
+    {
+      "x": 77.0,
+      "y": 97.0,
+      "customer_id": 0,
+      "demand": 5
+    },
+    {
+      "x": 28.0,
+      "y": 64.0,
+      "customer_id": 1,
+      "demand": 23
+    },
+    {
+      "x": 77.0,
+      "y": 39.0,
+      "customer_id": 2,
+      "demand": 14
+    },
+    {
+      "x": 32.0,
+      "y": 33.0,
+      "customer_id": 3,
+      "demand": 13
+    },
+    {
+      "x": 32.0,
+      "y": 8.0,
+      "customer_id": 4,
+      "demand": 8
+    },
+    {
+      "x": 42.0,
+      "y": 92.0,
+      "customer_id": 5,
+      "demand": 18
+    },
+    {
+      "x": 8.0,
+      "y": 3.0,
+      "customer_id": 6,
+      "demand": 19
+    },
+    {
+      "x": 7.0,
+      "y": 14.0,
+      "customer_id": 7,
+      "demand": 10
+    },
+    {
+      "x": 82.0,
+      "y": 17.0,
+      "customer_id": 8,
+      "demand": 18
+    },
+    {
+      "x": 48.0,
+      "y": 13.0,
+      "customer_id": 9,
+      "demand": 20
+    },
+    {
+      "x": 53.0,
+      "y": 82.0,
+      "customer_id": 10,
+      "demand": 5
+    },
+    {
+      "x": 39.0,
+      "y": 27.0,
+      "customer_id": 11,
+      "demand": 9
+    },
+    {
+      "x": 7.0,
+      "y": 24.0,
+      "customer_id": 12,
+      "demand": 23
+    },
+    {
+      "x": 67.0,
+      "y": 98.0,
+      "customer_id": 13,
+      "demand": 9
+    },
+    {
+      "x": 54.0,
+      "y": 52.0,
+      "customer_id": 14,
+      "demand": 18
+    },
+    {
+      "x": 72.0,
+      "y": 43.0,
+      "customer_id": 15,
+      "demand": 10
+    },
+    {
+      "x": 73.0,
+      "y": 3.0,
+      "customer_id": 16,
+      "demand": 24
+    },
+    {
+      "x": 59.0,
+      "y": 77.0,
+      "customer_id": 17,
+      "demand": 13
+    },
+    {
+      "x": 58.0,
+      "y": 97.0,
+      "customer_id": 18,
+      "demand": 14
+    },
+    {
+      "x": 23.0,
+      "y": 43.0,
+      "customer_id": 19,
+      "demand": 8
+    },
+    {
+      "x": 68.0,
+      "y": 98.0,
+      "customer_id": 20,
+      "demand": 10
+    },
+    {
+      "x": 47.0,
+      "y": 62.0,
+      "customer_id": 21,
+      "demand": 19
+    },
+    {
+      "x": 52.0,
+      "y": 72.0,
+      "customer_id": 22,
+      "demand": 14
+    },
+    {
+      "x": 32.0,
+      "y": 88.0,
+      "customer_id": 23,
+      "demand": 13
+    },
+    {
+      "x": 39.0,
+      "y": 7.0,
+      "customer_id": 24,
+      "demand": 14
+    },
+    {
+      "x": 17.0,
+      "y": 8.0,
+      "customer_id": 25,
+      "demand": 2
+    },
+    {
+      "x": 38.0,
+      "y": 7.0,
+      "customer_id": 26,
+      "demand": 23
+    },
+    {
+      "x": 58.0,
+      "y": 74.0,
+      "customer_id": 27,
+      "demand": 15
+    },
+    {
+      "x": 82.0,
+      "y": 67.0,
+      "customer_id": 28,
+      "demand": 8
+    },
+    {
+      "x": 42.0,
+      "y": 7.0,
+      "customer_id": 29,
+      "demand": 20
+    },
+    {
+      "x": 68.0,
+      "y": 82.0,
+      "customer_id": 30,
+      "demand": 24
+    },
+    {
+      "x": 7.0,
+      "y": 48.0,
+      "customer_id": 31,
+      "demand": 3
+    }
+  ]
+}
