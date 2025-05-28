@@ -14,6 +14,7 @@ class FacilityLocationInstance(BaseModel):
     # Metadata
     instance_uid: str = Field(..., description="The unique identifier of the instance.")
     origin: str = Field(default="", description="The origin or source of the instance.")
+    comment: str = Field(default="", description="Any comments to the instance.")
 
     # Instance statistics
     num_cities: PositiveInt = Field(
@@ -34,7 +35,10 @@ class FacilityLocationInstance(BaseModel):
     )
     path_cost: list[list[NonNegativeFloat | NonNegativeInt]] = Field(
         ...,
-        description="Cost to to travel from each city (outer) to each facility (inner).",
+        description=(
+            "Cost to to travel from each city (outer) to each facility (inner). "
+            "`path_cost[i][k]` is the cost from city *i* to facility *k*."
+        ),
     )
 
 

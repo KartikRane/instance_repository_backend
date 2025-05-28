@@ -1,7 +1,8 @@
 import logging
 from typing import Any
-from requests import Session
+
 from pydantic import BaseModel
+from requests import Session, codes
 
 # Configure root logger – adjust level as needed
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -42,7 +43,7 @@ class Connector:
         if params:
             logger.info("    params=%s", params)
         if json is not None:
-            logger.info("    json_payload=%s", json)
+            logger.info("    json_payload=%.300s...", json)
         if files:
             logger.info("    files=%s", files)
 
@@ -153,5 +154,3 @@ class Connector:
     def delete_solution(self, solution_uid: str) -> dict[str, Any]:
         """Deletes a specific solution for a problem instance."""
         return self._request("DELETE", f"/solutions/{solution_uid}")  # type: ignore
-
-

@@ -8,12 +8,13 @@ from pydantic import (
 )
 
 
-class WeightedCapacitatedFacilityLocationInstance(BaseModel):
+class CapacitatedFacilityLocationInstance(BaseModel):
     """Pydantic model representing a facility location problem instance."""
 
     # Metadata
     instance_uid: str = Field(..., description="The unique identifier of the instance.")
     origin: str = Field(default="", description="The origin or source of the instance.")
+    comment: str = Field(default="", description="Any comments to the instance.")
 
     # Instance statistics
     num_cities: PositiveInt = Field(
@@ -38,15 +39,18 @@ class WeightedCapacitatedFacilityLocationInstance(BaseModel):
     )
     path_cost: list[list[NonNegativeFloat | NonNegativeInt]] = Field(
         ...,
-        description="Cost to to travel from each city (outer) to each facility (inner).",
+        description=(
+            "Cost to to travel from each city (outer) to each facility (inner). "
+            "`path_cost[i][k]` is the cost from city *i* to facility *k*."
+        ),
     )
     demand: list[NonNegativeFloat | NonNegativeInt] = Field(
         ...,
-        description="Demand of each city in weighted capacitated variant.",
+        description="Demand of each city in capacitated variant.",
     )
 
 
-class WeightedCapacitatedFacilityLocationSolution(BaseModel):
+class CapacitatedFacilityLocationSolution(BaseModel):
     """Pydantic model representing a solution to a facility location problem instance."""
 
     # Solution metadata
@@ -71,14 +75,14 @@ class WeightedCapacitatedFacilityLocationSolution(BaseModel):
 # Configuration constants for the multi-knapsack problem
 
 # Unique identifier for the problem
-PROBLEM_UID = "weighted-capacitated-facility-location"
+PROBLEM_UID = "capacitated-facility-location"
 
 # Shared attribute name for instances and solutions
 INSTANCE_UID_ATTRIBUTE = "instance_uid"
 
 # Schema definitions
-INSTANCE_SCHEMA = WeightedCapacitatedFacilityLocationInstance
-SOLUTION_SCHEMA = WeightedCapacitatedFacilityLocationSolution
+INSTANCE_SCHEMA = CapacitatedFacilityLocationInstance
+SOLUTION_SCHEMA = CapacitatedFacilityLocationSolution
 
 # Filtering and sorting configurations
 RANGE_FILTERS = [
