@@ -1,73 +1,63 @@
-from pydantic import BaseModel, Field, PositiveInt
+from pydantic import BaseModel, Field, PositiveInt, NonNegativeInt, model_validator
 from typing import Optional
 
+
+# --- Shared Location Class ---
+class Location(BaseModel):
+    x: float = Field(..., description="X coordinate")
+    y: float = Field(..., description="Y coordinate")
+
+class Customer(Location):
+    customer_id: int = Field(..., description="Customer ID")
+    demand: NonNegativeInt = Field(..., description="Demand")
+
+class Depot(Location):
+    """Depot class, can be extended later."""
+
 class CvrpInstance(BaseModel):
-    """
-    Pydantic model representing a Capacitated Vehicle Routing Problem (CVRP) instance.
-    """
 
-    # Metadata
-    instance_uid: str = Field(..., description="Unique identifier of the instance.")
-    origin: str = Field(default="", description="Origin or source of the instance.")
+    instance_uid: str = Field(..., description="Unique instance ID")
+    origin: str = Field(default="", description="Benchmark or source")
+    vehicle_capacity: PositiveInt = Field(..., description="Vehicle capacity")
 
-    # Raw instance data
-    vehicle_capacity: PositiveInt = Field(
-        ..., description="Maximum capacity of each vehicle."
-    )
-    depot: tuple[float, float] = Field(
-        ..., description="Coordinates (x, y) of the depot."
-    )
-    customers: list[tuple[float, float]] = Field(
-        ..., description="List of customer coordinates (x, y)."
-    )
-    demands: list[PositiveInt] = Field(
-        ..., description="Demand for each customer (matches order of customers)."
-    )
-    distance_matrix: list[list[float]] = Field(
-        ..., description="Distance matrix including depot and customers."
-    )
+    depot: tuple[float, float] = Field(..., description="Depot coordinates (x, y)")
+    customers: list[tuple[float, float]] = Field(..., description="Customer coordinates (x, y)")
+    demands: list[PositiveInt] = Field(..., description="Demand for each customer")
+    distance_matrix: list[list[float]] = Field(..., description="Distance matrix including depot and customers")
 
+    schema_version: int = Field(default=0, description="Schema version")
 
+    @model_validator(mode="after")
+    def validate_instance(self) -> "CvrpInstance":
+        if len(self.customers) != len(self.demands):
+            raise ValueError("Mismatch: customers and demands must be same length.")
+        if len(self.distance_matrix) != (1 + len(self.customers)):
+            raise ValueError("Distance matrix must include depot + all customers.")
+        return self
+
+# --- Solution Schema for CVRP ---
 class CvrpSolution(BaseModel):
-    """
-    Pydantic model representing a solution to a CVRP instance.
-    """
-
-    instance_uid: str = Field(
-        ..., description="The unique identifier of the corresponding instance."
-    )
+    instance_uid: str = Field(..., description="Instance this solution belongs to")
     tours: list[list[int]] = Field(
-        ...,
-        description="List of vehicle tours. Each tour is a list of customer indices (0-based)."
+        ..., description="List of tours, each tour is a list of 0-based customer IDs"
     )
-    objective: Optional[float] = Field(
-        None, description="Total distance traveled in the solution."
-    )
-    authors: Optional[str] = Field(
-        None, description="The authors or contributors of the solution."
-    )
+    objective: Optional[float] = Field(None, description="Total distance")
+    authors: Optional[str] = Field(None, description="Solution contributors")
 
 
-# Configuration constants for the CVRP
+# --- Config Constants (matching CVRP2D pattern) ---
 
 PROBLEM_UID = "cvrp"
 INSTANCE_UID_ATTRIBUTE = "instance_uid"
-
 INSTANCE_SCHEMA = CvrpInstance
 SOLUTION_SCHEMA = CvrpSolution
 
-RANGE_FILTERS = ["vehicle_capacity"]
+RANGE_FILTERS = ["vehicle_capacity", "demands"]
 BOOLEAN_FILTERS = []
-SORT_FIELDS = ["vehicle_capacity"]
+SORT_FIELDS = ["vehicle_capacity", "demands"]
 
-DISPLAY_FIELDS = [
-    "instance_uid",
-    "vehicle_capacity",
-    "origin",
-]
-
+DISPLAY_FIELDS = ["instance_uid", "vehicle_capacity", "origin"]
 ASSETS = {"thumbnail": "png", "image": "png"}
 
 SOLUTION_SORT_ATTRIBUTES = ["objective", "authors"]
 SOLUTION_DISPLAY_FIELDS = ["objective", "authors"]
-
