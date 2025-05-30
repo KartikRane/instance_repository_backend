@@ -4,6 +4,7 @@ from typing import Optional
 
 # --- Shared Location Class ---
 class Location(BaseModel):
+    location_id: int = Field(..., description="Unique ID for this location (used in distance matrix)")
     x: float = Field(..., description="X coordinate")
     y: float = Field(..., description="Y coordinate")
 
@@ -12,7 +13,8 @@ class Customer(Location):
     demand: NonNegativeInt = Field(..., description="Demand")
 
 class Depot(Location):
-    """Depot class, can be extended later."""
+    """Depot inherits from Location"""
+    pass
 
 class CvrpInstance(BaseModel):
 
@@ -20,17 +22,16 @@ class CvrpInstance(BaseModel):
     origin: str = Field(default="", description="Benchmark or source")
     vehicle_capacity: PositiveInt = Field(..., description="Vehicle capacity")
 
-    depot: tuple[float, float] = Field(..., description="Depot coordinates (x, y)")
-    customers: list[tuple[float, float]] = Field(..., description="Customer coordinates (x, y)")
-    demands: list[PositiveInt] = Field(..., description="Demand for each customer")
-    distance_matrix: list[list[float]] = Field(..., description="Distance matrix including depot and customers")
+    locations: list[Location] = Field(..., description="All locations (depot + customers) with unique IDs")
+    depot: Depot = Field(..., description="Depot as a full Location model")
+    customers: list[Customer] = Field(..., description="List of customer objects")
+    num_customers: int = Field(..., description="Number of customers")
 
+    distance_matrix: list[list[float]] = Field(..., description="Distance matrix including depot and customers")
     schema_version: int = Field(default=0, description="Schema version")
 
     @model_validator(mode="after")
     def validate_instance(self) -> "CvrpInstance":
-        if len(self.customers) != len(self.demands):
-            raise ValueError("Mismatch: customers and demands must be same length.")
         if len(self.distance_matrix) != (1 + len(self.customers)):
             raise ValueError("Distance matrix must include depot + all customers.")
         return self
@@ -52,9 +53,9 @@ INSTANCE_UID_ATTRIBUTE = "instance_uid"
 INSTANCE_SCHEMA = CvrpInstance
 SOLUTION_SCHEMA = CvrpSolution
 
-RANGE_FILTERS = ["vehicle_capacity", "demands"]
+RANGE_FILTERS = ["vehicle_capacity", "num_customers"]
 BOOLEAN_FILTERS = []
-SORT_FIELDS = ["vehicle_capacity", "demands"]
+SORT_FIELDS = ["vehicle_capacity", "num_customers"]
 
 DISPLAY_FIELDS = ["instance_uid", "vehicle_capacity", "origin"]
 ASSETS = {"thumbnail": "png", "image": "png"}
