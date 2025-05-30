@@ -32,8 +32,12 @@ class CvrpInstance(BaseModel):
 
     @model_validator(mode="after")
     def validate_instance(self) -> "CvrpInstance":
-        if len(self.distance_matrix) != (1 + len(self.customers)):
-            raise ValueError("Distance matrix must include depot + all customers.")
+        num_locations = len(self.locations)
+        if len(self.distance_matrix) != num_locations:
+            raise ValueError("Distance matrix must match the number of locations (rows).")
+        for i, row in enumerate(self.distance_matrix):
+            if len(row) != num_locations:
+                raise ValueError(f"Distance matrix row {i} must have {num_locations} columns.")
         return self
 
 # --- Solution Schema for CVRP ---
