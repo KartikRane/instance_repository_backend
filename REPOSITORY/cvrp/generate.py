@@ -14,6 +14,19 @@ logger = logging.getLogger(__name__)
 
 CVRP_ZIP_URLS = [
     "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-A.zip",
+    "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-B.zip",
+    "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-E.zip",
+    "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-F.zip",
+    "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-M.zip",
+    "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-P.zip",
+    "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-CMT.zip",
+    "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-tai.zip",
+    "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-Golden.zip",
+    "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-Li.zip",
+    "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-X.zip",
+    "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-XXL.zip",
+    "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-D.zip",
+    "http://vrp.galgos.inf.puc-rio.br/media/com_vrp/instances/Vrp-Set-XML100.zip",
 ]
 
 def download_and_extract_cvrp_zip(zip_url: str, extract_root: Path):
