@@ -2,19 +2,21 @@ import os
 import json
 import lzma
 import urllib.request
-import logging
 from zipfile import ZipFile
 from pathlib import Path
-from config import PickupAndDeliveryInstance, Depot, Location, Request
+import logging
+from config import PickupAndDeliveryInstance, Depot, Location, Request, PROBLEM_UID
+from connector import Connector 
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-# Static URL from Mendeley (renamed locally since it’s served as "file_downloaded")
+# ZIP source(s)
 PICKUP_AND_DELIVERY_ZIP_URLS = [
-    "https://data.mendeley.com/public-files/datasets/wr2ct4r22f/2/files/3a7ae280-6b8a-43ab-81d9-639db92169b8/file_downloaded"
+    "https://prod-dcd-datasets-cache-zipfiles.s3.eu-west-1.amazonaws.com/wr2ct4r22f-2.zip"
 ]
+
 
 def download_and_extract_zip(zip_url: str, extract_root: Path):
     zip_name = "pickup_and_delivery.zip"
@@ -25,15 +27,7 @@ def download_and_extract_zip(zip_url: str, extract_root: Path):
     if not zip_path.exists():
         logger.info(f"Downloading {zip_name} from {zip_url}")
         extract_root.mkdir(parents=True, exist_ok=True)
-        try:
-            req = urllib.request.Request(
-                zip_url,
-                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-            )
-            with urllib.request.urlopen(req) as response, open(zip_path, 'wb') as out_file:
-                out_file.write(response.read())
-        except Exception as e:
-            raise RuntimeError(f"Download failed: {e}")
+        urllib.request.urlretrieve(zip_url, zip_path)
 
     if not extract_dir.exists():
         logger.info(f"Extracting {zip_path} to {extract_dir}")
@@ -43,17 +37,17 @@ def download_and_extract_zip(zip_url: str, extract_root: Path):
     return extract_dir, set_name
 
 
-def parse_instance_file(file_path: str) -> PickupAndDeliveryInstance:
+def parse_instance_file(file_path: str, set_name: str, zip_url: str) -> PickupAndDeliveryInstance:
+    file_path = Path(file_path) # Ensuring file_path is a Path object
     with open(file_path, 'r') as f:
         lines = [line.strip() for line in f if line.strip()]
 
     metadata = {}
     nodes = []
-
     i = 0
+
     while i < len(lines):
         line = lines[i]
-
         if line.startswith("NAME:"):
             metadata["instance_uid"] = line.split(":", 1)[1].strip()
         elif line.startswith("LOCATION:"):
@@ -88,6 +82,9 @@ def parse_instance_file(file_path: str) -> PickupAndDeliveryInstance:
                 nodes.append((node_id, x, y, demand, ready_time, due_time, service_time))
                 i += 1
         i += 1
+
+    if not nodes:
+        raise ValueError(f"No valid node data found in {file_path}")
 
     depot_data = nodes[0]
     depot = Depot(
@@ -130,9 +127,14 @@ def parse_instance_file(file_path: str) -> PickupAndDeliveryInstance:
         )
         requests.append(request)
 
-    return PickupAndDeliveryInstance(
-        instance_uid=metadata["instance_uid"],
-        origin=metadata["origin"],
+    instance = PickupAndDeliveryInstance(
+        instance_uid=f"PUDEL/{set_name}/{file_path.stem}",
+        origin=(
+             "Sulzbach Sartori, Carlo; Buriol, Luciana (2020), "
+             "Instances for the Pickup and Delivery Problem with Time Windows based on open data, "
+             "Mendeley Data, V2, doi: 10.17632/wr2ct4r22f.2"
+             f"{zip_url} - pickup and delivery benchmark instance (all files including instances as well as solutions)"
+             ),
         size=metadata["size"],
         city=metadata["city"],
         distribution=metadata["distribution"],
@@ -147,30 +149,50 @@ def parse_instance_file(file_path: str) -> PickupAndDeliveryInstance:
         requests=requests
     )
 
-def save_as_json_xz(instance: PickupAndDeliveryInstance, output_path: Path):
-    with lzma.open(output_path, "wt") as f:
-        json.dump(instance.model_dump(), f, indent=2)
+    return instance
 
-def main():
+
+if __name__ == "__main__":
+    connector = Connector(
+        base_url=os.environ.get("BASE_URL", "http://127.0.0.1"),
+        problem_uid=os.environ.get("PROBLEM_UID", PROBLEM_UID),
+        api_key=os.environ.get("API_KEY", "3456345-456-456"),
+    )
+
     extract_root = Path("data/pickup_and_delivery_raw")
-    output_root = Path("data/pickup_and_delivery_parsed")
-    output_root.mkdir(parents=True, exist_ok=True)
 
     for zip_url in PICKUP_AND_DELIVERY_ZIP_URLS:
         try:
             extract_dir, set_name = download_and_extract_zip(zip_url, extract_root)
-            for file_path in extract_dir.glob("*.txt"):
+
+            instances_dir = extract_dir / "Instances"
+            if not instances_dir.exists():
+                logger.error(f"Instances directory not found: {instances_dir}")
+                continue
+
+            nested_extract_dir = extract_dir / "tmp_extracted_instances"
+            nested_extract_dir.mkdir(parents=True, exist_ok=True)
+
+            for sub_zip in instances_dir.glob("*.zip"):
+                try:
+                    logger.info(f"Extracting nested ZIP: {sub_zip.name}")
+                    with ZipFile(sub_zip, "r") as zip_ref:
+                        zip_ref.extractall(nested_extract_dir)
+                except Exception as e:
+                    logger.error(f"Failed to extract {sub_zip.name}: {e}")
+
+            for file_path in nested_extract_dir.rglob("*.txt"):
+                if file_path.name.lower() in {"readme.txt", "configurations.txt"}:
+                    logger.info(f"Skipping non-instance file: {file_path.name}")
+                    continue
                 try:
                     logger.info(f"Processing {file_path.name}")
-                    instance = parse_instance_file(str(file_path))
-                    output_path = output_root / f"{file_path.stem}.json.xz"
-                    save_as_json_xz(instance, output_path)
+                    instance = parse_instance_file(str(file_path), set_name=set_name, zip_url=zip_url)
+                    connector.upload_instance(instance)
+                    logger.info(f"Uploaded instance: {instance.instance_uid}")
                 except Exception as e:
                     logger.error(f"Failed to process {file_path.name}: {e}")
         except Exception as e:
             logger.error(f"Failed to handle ZIP from {zip_url}: {e}")
 
     logger.info("Finished processing Pickup & Delivery instances.")
-
-if __name__ == "__main__":
-    main()
